@@ -44,7 +44,7 @@ const AppHeaderDropdown = () => {
   async function getRole () {
     setIsLoading(true)
     API.post('dashboard/regis/getRoleById', {
-      roleId: sessionData.ROLE_ID
+      roleId: sessionData.ROLE
     })
     .then(result => {
       if (result.data.status) {
@@ -63,7 +63,7 @@ const AppHeaderDropdown = () => {
 }
 
 useEffect(() => {
-  getRole()
+  // getRole()
 },[])
 
   return (
@@ -71,7 +71,7 @@ useEffect(() => {
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
       <CAvatar
           src={
-            sessionData.ROLE_ID === 'ROLE001'
+            sessionData.ROLE === 'ROLEGOD'
               ? rolegod
               : perawat
           }

@@ -7,7 +7,7 @@ const PrivateRoutes = () => {
   const sessionData = useSelector(sessionSelector);
   
   if (sessionData !== null && sessionData !== undefined) {
-    if(Object.keys(sessionData).length > 1){
+    if (sessionData && Object.keys(sessionData).length > 0){
       return <Outlet />;
     } else {
       return <Navigate to="/login" replace />;

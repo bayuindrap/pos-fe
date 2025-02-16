@@ -185,10 +185,10 @@ class EncryptBlowfish {
       const encoded = this.bf.encode(JSON.stringify(this.textEncode), Blowfish.TYPE.UINT8_ARRAY);
       if (!encoded) throw new Error('Encryption failed');
 
-      console.log('Encrypted Uint8Array:', encoded);
+      // console.log('Encrypted Uint8Array:', encoded);
       return encoded;
     } catch (error) {
-      console.error('Encryption Error:', error);
+      // console.error('Encryption Error:', error);
       return null;
     }
   }
@@ -198,7 +198,7 @@ class EncryptBlowfish {
       const decodedString = this.bf.decode(this.textDecode, Blowfish.TYPE.STRING);
       if (!decodedString) throw new Error('Decryption returned empty result');
 
-      console.log('Decrypted String:', decodedString);
+      // console.log('Decrypted String:', decodedString);
 
       return JSON.parse(decodedString);
     } catch (error) {
@@ -214,10 +214,10 @@ const getStoredData = () => {
     const storedData = localStorage.getItem("data");
     if (!storedData) return null;
 
-    console.log('Stored Base64 Data:', storedData);
+    // console.log('Stored Base64 Data:', storedData);
 
     const decryptedData = new EncryptBlowfish("", Base64.toUint8Array(storedData)).decrypt();
-    console.log('Decrypted JSON Data:', decryptedData);
+    // console.log('Decrypted JSON Data:', decryptedData);
 
     return decryptedData;
   } catch (error) {
@@ -240,7 +240,7 @@ const sessionSlice = createSlice({
         if (!encryptBlowfishs) throw new Error('Encryption failed');
 
         const encryptBase64 = Base64.fromUint8Array(encryptBlowfishs, true);
-        console.log('Encrypted Base64:', encryptBase64);
+        // console.log('Encrypted Base64:', encryptBase64);
 
         localStorage.setItem('data', encryptBase64);
 

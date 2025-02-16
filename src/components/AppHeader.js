@@ -48,7 +48,7 @@ const AppHeader = () => {
   return (
     <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
       <CContainer className="border-bottom px-4" fluid>
-        <CHeaderToggler
+      <CHeaderToggler
            onClick={() =>  dispatch(
             stateAction.changeState({
               type:'setSideBarShow',
@@ -58,10 +58,10 @@ const AppHeader = () => {
         >
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
-        <CHeaderNav style={{textAlign: "center"}}>
+        <CHeaderNav className={sidebarShow ? "header-shifted" : "header-default"}>
           <CNavItem>
             <CNavLink to="/dashboard" as={NavLink}>
-              DASHBOARD NAOMI
+              POS Apps
             </CNavLink>
           </CNavItem>
         </CHeaderNav>
@@ -111,7 +111,7 @@ const AppHeader = () => {
           </li>
           <CNavItem>
             <CNavLink>
-              Hello, {sessionData.USR_NM}
+              Hello, {sessionData[0].USERNAME}
             </CNavLink>
           </CNavItem>
           <AppHeaderDropdown />

@@ -71,7 +71,7 @@ const Login = () => {
   useEffect(()=>{
 		if(sessionData){
 			if(Object.keys(sessionData).length > 1){
-				//console.log(Object.keys(sessionData).length);
+				// console.log(Object.keys(sessionData).length);
 				// history("/dashboard");
 				setTimeout(() => {
 					history("/dashboard");
