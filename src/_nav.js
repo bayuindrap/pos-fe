@@ -22,7 +22,10 @@ import {
   cilLevelUp,
   cilOptions,
   cibKeycdn,
-  cilDescription
+  cilDescription,
+  cilGift,
+  cilChartLine,
+  cilScreenDesktop
 } from '@coreui/icons';
 import {
   CNavItem,
@@ -52,8 +55,9 @@ const Navigation = () => {
   const logoutHandler = async (e) => {
     e.preventDefault();
     setIsLogout(true);
-    var params = { usrId: sessionData.USR_ID, tokenFcm: null };
-    await API.post('dashboard/login/updateToken', params);
+    var params = { userId: sessionData[0].ID_USER, token: null };
+    console.log("cek", sessionData[0].ID_USER)
+    await API.post('login/updateToken', params);
     dispatch(sessionAction.logout());
     setTimeout(() => {
       navigate('/login');
@@ -62,7 +66,7 @@ const Navigation = () => {
   };
 
   useEffect(() => {
-    // console.log("session", sessionData.ROLE)
+    // console.log("data session", sessionData[0])
   }, []);
 
   const navItems = [
@@ -71,35 +75,30 @@ const Navigation = () => {
       name: 'Dashboard',
       to: '/dashboard',
       icon: <CIcon icon={cilColumns} customClassName='nav-icon' />,
-      roles: ['ROLEGOD', 'ROLE002'],
+      roles: ['ROLEGOD', 'ROLEUSER'],
     },
     {
       component: CNavItem,
-      name: 'Pasien',
+      name: 'Product',
       to: '/jumlahPasien',
-      icon: <CIcon icon={cilPeople} customClassName='nav-icon' />,
-      roles: ['ROLEGOD', 'ROLE002'],
+      icon: <CIcon icon={cilGift} customClassName='nav-icon' />,
+      roles: ['ROLEGOD', 'ROLEUSER'],
     },
     {
       component: CNavItem,
-      name: 'Perawat',
-      to: '/jumlahPerawat',
-      icon: <CIcon icon={cilUserFemale} customClassName='nav-icon' />,
-      roles: ['ROLEGOD' ],
+      name: 'POS',
+      to: '/jumlahPasien',
+      icon: <CIcon icon={cilScreenDesktop} customClassName='nav-icon' />,
+      roles: ['ROLEGOD', 'ROLEUSER'],
+    },
+    
+    {
+      component: CNavTitle,
+      name: '',
     },
     {
-      component: CNavItem,
-      name: 'Keluarga',
-      to: '/keluarga',
-      icon: <CIcon icon={cilContact} customClassName='nav-icon' />,
-      roles: ['ROLEGOD', 'ROLE002'],
-    },
-    {
-      component: CNavItem,
-      name: 'Kunjungan Dokter',
-      to: '/jumlahKunjungan',
-      icon: <CIcon icon={cilHospital} customClassName='nav-icon' />,
-      roles: ['ROLEGOD', 'ROLE002'],
+      component: CNavTitle,
+      name: '',
     },
     {
       component: CNavTitle,
@@ -112,134 +111,21 @@ const Navigation = () => {
       items: [
         {
           component: CNavItem,
-          name: 'Pengaturan Key',
-          to: '/key',
+          name: 'Master Product',
+          to: '/products/master',
           icon: <CIcon icon={cibKeycdn} customClassName='nav-icon' />,
           roles: ['ROLEGOD'],
         },
         {
           component: CNavItem,
-          name: 'Pengaturan Obat',
+          name: 'Master Transaction',
           to: '/jumlahObat',
-          icon: <CIcon icon={cilMedicalCross} customClassName='nav-icon' />,
-          roles: ['ROLEGOD', 'ROLE002'],
+          icon: <CIcon icon={cilChartLine} customClassName='nav-icon' />,
+          roles: ['ROLEGOD', 'ROLEUSER'],
         },
-        {
-          component: CNavItem,
-          name: 'Pengaturan Pasien',
-          to: '/pengaturanPasien',
-          icon: <CIcon icon={cilPeople} customClassName='nav-icon' />,
-          roles: ['ROLEGOD', 'ROLE002'],
-        },
-        {
-          component: CNavItem,
-          name: 'Pengaturan Perawat',
-          to: '/pengaturanPerawat',
-          icon: <CIcon icon={cilUserFemale} customClassName='nav-icon' />,
-          roles: ['ROLEGOD', 'ROLE002'],
-        },
-        {
-          component: CNavItem,
-          name: 'Pengaturan Keluarga',
-          to: '/pengaturanKeluarga',
-          icon: <CIcon icon={cilContact} customClassName='nav-icon' />,
-          roles: ['ROLEGOD', 'ROLE002'],
-        },
-        {
-          component: CNavItem,
-          name: 'Pengaturan Keluhan',
-          to: '/pengaturanKeluhan',
-          icon: <CIcon icon={cilChart} customClassName='nav-icon' />,
-          roles: ['ROLEGOD', 'ROLE002'],
-        },
-        {
-          component: CNavItem,
-          name: 'Jawaban Quiz',
-          to: '/jawabanQuiz',
-          icon: <CIcon icon={cilColorBorder} customClassName='nav-icon' />,
-          roles: ['ROLEGOD', 'ROLE002'],
-        },
-        {
-          component: CNavGroup,
-          name: 'Hasil Survey',
-          icon: <CIcon icon={cilBook} customClassName='nav-icon' />,
-          items: [
-            {
-              component: CNavItem,
-              name: 'Survey Keluarga',
-              to: '/jawabanSurveyKeluarga',
-              icon: <CIcon icon={cilDescription} customClassName='nav-icon' />,
-              roles: ['ROLEGOD','ROLE002'],
-            },
-            {
-              component: CNavItem,
-              name: 'Survey Pasien',
-              to: '/jawabanSurveyPasien',
-              icon: <CIcon icon={cilUser} customClassName='nav-icon' />,
-              roles: ['ROLEGOD','ROLE002'],
-            },
-          ],
-          roles: ['ROLEGOD','ROLE002'],
-        },
-        {
-          component: CNavGroup,
-          name: 'Master Quiz',
-          icon: <CIcon icon={cilGamepad} customClassName='nav-icon' />,
-          items: [
-            {
-              component: CNavItem,
-              name: 'Level Quiz',
-              to: '/levelQuiz',
-              icon: <CIcon icon={cilLevelUp} customClassName='nav-icon' />,
-              roles: ['ROLEGOD'],
-            },
-            {
-              component: CNavItem,
-              name: 'Tema Quiz',
-              to: '/temaQuiz',
-              icon: <CIcon icon={cilNotes} customClassName='nav-icon' />,
-              roles: ['ROLEGOD'],
-            },
-            {
-              component: CNavItem,
-              name: 'Pertanyaan Quiz',
-              to: '/quiz',
-              icon: <CIcon icon={cilPenAlt} customClassName='nav-icon' />,
-              roles: ['ROLEGOD'],
-            },
-          ],
-          roles: ['ROLEGOD'],
-        },
-        {
-          component: CNavItem,
-          name: 'Pengaturan Records',
-          to: '/pengaturanRecords',
-          icon: <CIcon icon={cilOptions} customClassName='nav-icon' />,
-          roles: ['ROLEGOD'],
-        },
-        {
-          component: CNavItem,
-          name: 'Pengaturan Survey',
-          to: '/survey',
-          icon: <CIcon icon={cilSpeech} customClassName='nav-icon' />,
-          roles: ['ROLEGOD'],
-        },
-        {
-          component: CNavItem,
-          name: 'Pengaturan Education',
-          to: '/pengaturanEducation',
-          icon: <CIcon icon={cilMovie} customClassName='nav-icon' />,
-          roles: ['ROLEGOD'],
-        },
-        {
-          component: CNavItem,
-          name: 'Pengaturan User',
-          to: '/dataUser',
-          icon: <CIcon icon={cilAddressBook} customClassName='nav-icon' />,
-          roles: ['ROLEGOD', 'ROLE002'],
-        },
+        
       ],
-      roles: ['ROLEGOD', 'ROLE002'],
+      roles: ['ROLEGOD', 'ROLEUSER'],
     },
     {
       component: CNavItem,
@@ -254,12 +140,10 @@ const Navigation = () => {
       ) : (
         <CIcon icon={cilAccountLogout} customClassName='nav-icon' />
       ),
-      roles: ['ROLEGOD', 'ROLE002'],
+      roles: ['ROLEGOD', 'ROLEUSER'],
       style: { fontWeight: 'bold', fontSize: '20px' },
     },
-  ];
-
-
+  ];  
   const filterNavItems = (items) => {
     return items
       .filter((item) => !item.roles || item.roles.includes(sessionData[0].ROLE))

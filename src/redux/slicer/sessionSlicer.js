@@ -226,9 +226,30 @@ const getStoredData = () => {
   }
 };
 
+const getStoredToken = () => {
+  try {
+    return localStorage.getItem('token') || null;
+  } catch (error) {
+    console.error('Error getting stored token:', error);
+    return null;
+  }
+};
+
+const getStoredRefreshToken = () => {
+  try {
+    return localStorage.getItem('refreshToken') || null;
+  } catch (error) {
+    console.error('Error getting stored refreshToken:', error);
+    return null;
+  }
+};
+
 const INITIAL_STATE = {
   data: getStoredData(),
+  token: getStoredToken(),
+  refreshToken: getStoredRefreshToken()
 };
+
 
 const sessionSlice = createSlice({
   name: 'session',
@@ -236,15 +257,25 @@ const sessionSlice = createSlice({
   reducers: {
     addSession: (state, action) => {
       try {
-        const encryptBlowfishs = new EncryptBlowfish(action.payload.data, "").encrypt();
-        if (!encryptBlowfishs) throw new Error('Encryption failed');
+        const { data, token, refreshToken } = action.payload;
+        // if (!token || !refreshToken) {
+        //   console.error('Token or refreshToken is missing in payload');
+        //   return;
+        // }
 
-        const encryptBase64 = Base64.fromUint8Array(encryptBlowfishs, true);
-        // console.log('Encrypted Base64:', encryptBase64);
 
+        const encryptBlowfish = new EncryptBlowfish(data, "").encrypt();
+        if (!encryptBlowfish) throw new Error('Encryption failed');
+
+        const encryptBase64 = Base64.fromUint8Array(encryptBlowfish, true);
         localStorage.setItem('data', encryptBase64);
+        localStorage.setItem('token', token);
+        localStorage.setItem('refreshToken', refreshToken);
 
         state.data = new EncryptBlowfish("", Base64.toUint8Array(encryptBase64)).decrypt();
+        state.token = token;
+        state.refreshToken = refreshToken;
+
       } catch (error) {
         console.error('Error in addSession:', error);
       }
@@ -252,7 +283,11 @@ const sessionSlice = createSlice({
     
     logout: (state) => {
       localStorage.removeItem('data');
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
       state.data = null;
+      state.token = null;
+      state.refreshToken = null;
     },
     
     updateToken: (state, action) => {
@@ -279,5 +314,6 @@ const sessionSlice = createSlice({
 
 export const sessionAction = sessionSlice.actions;
 export const sessionSelector = (state) => state.session.data;
+export const sessionToken = (state) => state.session.token;
 export default sessionSlice;
 

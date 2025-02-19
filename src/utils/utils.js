@@ -100,6 +100,12 @@ const formatDateTime = (date) => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
+function formatCurrency(amount) {
+  const formattedAmount = amount.toLocaleString('id-ID');
+  return `Rp. ${formattedAmount}`;
+}
+
+
 function renderLoading() {
   return (
     <div
@@ -123,4 +129,4 @@ function renderLoading() {
 
 
 
-export {toast, formattedDate, renderLoading, formattedDate2, formatDateTime};
+export {toast, formattedDate, renderLoading, formattedDate2, formatDateTime, formatCurrency};

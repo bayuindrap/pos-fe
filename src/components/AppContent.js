@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { CContainer, CSpinner } from '@coreui/react'
 
 
-import {routes} from '../routes'
+import {adminRoutes, routes} from '../routes'
 import { useSelector } from "react-redux";
 import {sessionSelector} from "../redux/slicer/sessionSlicer"
 
@@ -12,9 +12,9 @@ const AppContent = () => {
   const [roleRoute,setRoleRoute] = useState(routes);
 
   useEffect(()=>{
-    switch(sessionData.ROLE) {
+    switch(sessionData[0].ROLE) {
       case 'ROLEGOD':
-          setRoleRoute(routes);
+          setRoleRoute(adminRoutes);
           break;
       case 'ROLEUSER':
           setRoleRoute(routes);

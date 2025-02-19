@@ -11,8 +11,7 @@ const AppBreadcrumb = () => {
   const [roleRoute,setRoleRoute] = useState(routes);
 
   useEffect(()=>{
-    console.log("ses", sessionData)
-    switch(sessionData.ROLE) {
+    switch(sessionData[0].ROLE) {
       case 'ROLEGOD':
           setRoleRoute(adminRoutes);
           break;

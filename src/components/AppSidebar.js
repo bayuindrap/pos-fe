@@ -11,7 +11,7 @@ import {
   CImage
 } from '@coreui/react'
 import { AppSidebarNav } from './AppSidebarNav'
-import logo from '../assets/images/logo1.png'
+import logo from '../assets/images/agc.png'
 import Navigation from '../_nav'
 import { stateAction } from '../redux/slicer/stateSlicer'
 

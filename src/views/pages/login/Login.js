@@ -47,7 +47,9 @@ const Login = () => {
         const result = await API.post('login', params);
         if (result.data.status) {
           dispatch(sessionAction.addSession({
-            data: result.data.data
+            data: result.data.data,
+            token: result.data.token,
+            refreshToken: result.data.refreshToken
           }));
           setTimeout(() => {
             history("/dashboard");
