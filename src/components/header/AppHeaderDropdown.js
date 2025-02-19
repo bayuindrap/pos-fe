@@ -29,7 +29,7 @@ import CIcon from '@coreui/icons-react'
 import { sessionSelector, sessionAction } from '../../redux/slicer/sessionSlicer'
 // import { sessionAction } from '../../redux/slicer/sessionSlicer'
 import rolegod from './../../assets/images/GOD.png'
-import perawat from './../../assets/images/perawat.png'
+import user from './../../assets/images/perawat.png'
 import API from '../../service/api'
 import { toast,renderLoading } from '../../utils/utils'
 
@@ -71,9 +71,9 @@ useEffect(() => {
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
       <CAvatar
           src={
-            sessionData.ROLE === 'ROLEGOD'
+            sessionData[0].ROLE === 'ROLEGOD'
               ? rolegod
-              : perawat
+              : user
           }
           size='md'
         />

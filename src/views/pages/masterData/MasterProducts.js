@@ -54,9 +54,11 @@ const MasterProducts = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalItems, setTotalItems] = useState(0);
   const [modal, setModal] = React.useState(false);
+  const [modalView, setModalView] = React.useState(false);
   const [category, setCategory] = useState([])
   const [selectedCategory, setSelectedCategory] = React.useState(null)
   const [imageFile, setImageFile] = useState(null);
+  const [selectedProduct, setSelectedProduct] = React.useState(null);
   const [imageUrl, setImageUrl] = useState('');
   const addName = useRef("")
   const addPrice = useRef("")
@@ -74,9 +76,19 @@ const MasterProducts = () => {
     getCategory()
   }
 
+  const handleClickView = (item) => {
+    setModalView(true)
+    setSelectedProduct(item)
+  }
+
   const handleModalClose = () => {
     setModal(false);
     setSelectedCategory(null);
+  };
+
+  const handleModalViewClose = () => {
+    setModalView(false);
+    setSelectedProduct(null)
   };
 
   const handleFileChange = (e) => {
@@ -137,7 +149,7 @@ const MasterProducts = () => {
           <CTableHeaderCell>Category</CTableHeaderCell>
           <CTableHeaderCell>Price</CTableHeaderCell>
           <CTableHeaderCell>Qty</CTableHeaderCell>
-          <CTableHeaderCell>Pilih</CTableHeaderCell>
+          <CTableHeaderCell>Image</CTableHeaderCell>
         </CTableRow>
       </CTableHead>
       <CTableBody>
@@ -150,8 +162,15 @@ const MasterProducts = () => {
               <CTableDataCell>{item.CATEGORY}</CTableDataCell>
               <CTableDataCell>{formatCurrency(item.PRICE)}</CTableDataCell>
               <CTableDataCell>{item.STOCK}</CTableDataCell>
-              <CTableDataCell>   
-            </CTableDataCell>
+              <CTableDataCell>
+                <CButton
+                  color="secondary"
+                  style={{ borderRadius: 40, width: 75, marginRight: 5 }}
+                  onClick={() => handleClickView(item)}
+                >
+                  View
+                </CButton>
+              </CTableDataCell>
             </CTableRow>
           );
         })}
@@ -186,6 +205,8 @@ const MasterProducts = () => {
           setIsLoading(false);
         } else {
           setIsLoading(false);
+          setData([])
+          setTotalItems(0)
           toast("error", result.data.message);
         }
       })
@@ -198,7 +219,7 @@ const MasterProducts = () => {
   async function addProducts () {
     // console.log("data", selectedFamily.RELATION_ID)
     const confirmationResult = await Swal.fire({
-      title: `Add data ${addName.current.value}?`,
+      title: `Add product ${addName.current.value}?`,
       showCancelButton: true,
       confirmButtonText: 'Save',
       cancelButtonText: 'Cancel',
@@ -211,6 +232,16 @@ const MasterProducts = () => {
       }
     })
     if (confirmationResult.isConfirmed) {
+      const token = sessionTokens
+      if (!token) {
+        toast("error", "Token not found");
+        setIsLoading(false);
+        return;
+      }
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      };
       setIsLoading(true)
       const imageUrl = await uploadToCloudinary(imageFile);
     
@@ -225,9 +256,11 @@ const MasterProducts = () => {
           category : selectedCategory,
           stock : addStock.current.value,
           imageUrl: imageUrl
-        })
+        },
+        {headers}
+      )
         .then(result => {   
-          //  console.log(result)
+           console.log(result)
           if (result.data.status) {
             getProducts()
             setIsLoading(false)
@@ -235,7 +268,8 @@ const MasterProducts = () => {
             toast("success", result.data.message);
             // window.location.reload()
           } else {
-            toast("error", result.data.message);
+            console.log("cekres",result)
+            toast("error", result.message);
           }
           setIsLoading(false)
         })
@@ -279,10 +313,6 @@ const MasterProducts = () => {
 
   useEffect(() => {
     getProducts()
-    // getFamily()
-    // getGender()
-    // getValue()
-    // getRelation()
   }, [currentPage, itemsPerPage, searchTerm])
 
   return (
@@ -290,15 +320,15 @@ const MasterProducts = () => {
      <div className="d-flex justify-content-end align-items-center mb-3">
           <CButton
             color="primary"
-            style={{ width: 180, height: 75, borderRadius: 15, fontSize: "20px" }}
+            style={{ width: 150, height: 50, borderRadius: 15, fontSize: "18px" }}
             onClick={handleClick}
           >
-            + Products
+            Add Product
           </CButton>
       </div>
       <CCard className="mb-4" style={{borderRadius: 20}}>
         <CCardHeader>
-          <CHeaderBrand>Master Products</CHeaderBrand>
+          <CHeaderBrand>Master Data Products</CHeaderBrand>
         </CCardHeader>
         <CCardBody>
           <CRow className="mb-3">
@@ -316,7 +346,7 @@ const MasterProducts = () => {
             <CInputGroup>
                 <CFormInput
                   type="text"
-                  placeholder="Cari..."
+                  placeholder="Find Products..."
                   value={searchTerm}
                   onChange={handleSearch}
                 />
@@ -335,16 +365,17 @@ const MasterProducts = () => {
             onPageChange={setCurrentPage}
           />
           </div>
-          {/* <TablePerawat data={filteredData}/> */}
+          
         </CCardBody>
       </CCard>
+      {/* Modal Add Product */}
       <CModal
         visible={modal}
         onClose={handleModalClose}
         size="md"
       >
         <CModalHeader closeButton>
-          <CModalTitle>Add Products</CModalTitle>
+          <CModalTitle>Add Product</CModalTitle>
         </CModalHeader>
         <CModalBody>
           {/* {selectedFamily && ( */}
@@ -391,11 +422,38 @@ const MasterProducts = () => {
         </CModalBody>
         <CModalFooter>
           <CButton color="danger" style={{borderRadius:20, width: 75}} onClick={handleModalClose}>
-            Batal
+            Cancel
           </CButton>
-          <CButton color="success" style={{borderRadius:20, width: 75}} onClick={addProducts}>Simpan</CButton>
+          <CButton color="success" style={{borderRadius:20, width: 75}} onClick={addProducts}>Add</CButton>
         </CModalFooter>
       </CModal>
+        {/* Modal View    */}
+        <CModal
+          visible={modalView}
+          onClose={handleModalViewClose}
+          size="md"
+        >
+          <CModalHeader closeButton>
+            <CModalTitle>Image Product </CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            {selectedProduct && (
+              <CImage 
+                src={selectedProduct.IMAGE} 
+                alt="Product Image" 
+                fluid 
+              />
+            )}
+            
+            {isLoading ? renderLoading() : null}
+          </CModalBody>
+          <CModalFooter>
+            <CButton color="danger" style={{ borderRadius: 20, width: 75 }} onClick={handleModalViewClose}>
+              Close
+            </CButton>
+          </CModalFooter>
+        </CModal>
+
     </>
   )
 }

@@ -25,7 +25,8 @@ import {
   cilDescription,
   cilGift,
   cilChartLine,
-  cilScreenDesktop
+  cilScreenDesktop,
+  cilBrowser
 } from '@coreui/icons';
 import {
   CNavItem,
@@ -113,7 +114,7 @@ const Navigation = () => {
           component: CNavItem,
           name: 'Master Product',
           to: '/products/master',
-          icon: <CIcon icon={cibKeycdn} customClassName='nav-icon' />,
+          icon: <CIcon icon={cilBrowser} customClassName='nav-icon' />,
           roles: ['ROLEGOD'],
         },
         {

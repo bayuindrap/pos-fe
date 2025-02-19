@@ -111,7 +111,7 @@ const AppHeader = () => {
           </li>
           <CNavItem>
             <CNavLink>
-              Hello, {sessionData[0].USERNAME}
+              Hello, {sessionData[0].NAMA}
             </CNavLink>
           </CNavItem>
           <AppHeaderDropdown />
