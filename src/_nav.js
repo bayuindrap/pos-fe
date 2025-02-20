@@ -88,7 +88,7 @@ const Navigation = () => {
     {
       component: CNavItem,
       name: 'POS',
-      to: '/jumlahPasien',
+      to: '/POS',
       icon: <CIcon icon={cilScreenDesktop} customClassName='nav-icon' />,
       roles: ['ROLEGOD', 'ROLEUSER'],
     },

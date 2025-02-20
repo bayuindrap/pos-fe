@@ -15,7 +15,7 @@ const PaginationComponent = ({ currentPage, totalItems, itemsPerPage, onPageChan
     <div className="d-flex flex-column align-items-end">
       <div className="mb-2">
         {showDataRange ? (
-          `${startIndex}-${endIndex} dari ${totalItems}`
+          `${startIndex}-${endIndex} of ${totalItems}`
         ) : (
           'No data available'
         )}

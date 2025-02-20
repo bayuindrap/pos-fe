@@ -145,10 +145,11 @@ const MasterProducts = () => {
       <CTableHead>
         <CTableRow style={{textAlign: "center"}}>
           <CTableHeaderCell>No</CTableHeaderCell>
+          <CTableHeaderCell>Id Products</CTableHeaderCell>
           <CTableHeaderCell>Product Name</CTableHeaderCell>
           <CTableHeaderCell>Category</CTableHeaderCell>
           <CTableHeaderCell>Price</CTableHeaderCell>
-          <CTableHeaderCell>Qty</CTableHeaderCell>
+          <CTableHeaderCell>Stock</CTableHeaderCell>
           <CTableHeaderCell>Image</CTableHeaderCell>
         </CTableRow>
       </CTableHead>
@@ -158,18 +159,24 @@ const MasterProducts = () => {
           return (
             <CTableRow key={index} style={{textAlign: "center"}}>
               <CTableDataCell>{actualIndex}</CTableDataCell>
+              <CTableDataCell>{item.ID_PRODUCTS}</CTableDataCell>
               <CTableDataCell>{item.NAME}</CTableDataCell>
               <CTableDataCell>{item.CATEGORY}</CTableDataCell>
               <CTableDataCell>{formatCurrency(item.PRICE)}</CTableDataCell>
               <CTableDataCell>{item.STOCK}</CTableDataCell>
               <CTableDataCell>
-                <CButton
+                {/* <CButton
                   color="secondary"
                   style={{ borderRadius: 40, width: 75, marginRight: 5 }}
                   onClick={() => handleClickView(item)}
                 >
                   View
-                </CButton>
+                </CButton> */}
+                 <CImage 
+                src={item.IMAGE} 
+                alt="Product Image" 
+                width={150} 
+              />
               </CTableDataCell>
             </CTableRow>
           );
@@ -428,7 +435,7 @@ const MasterProducts = () => {
         </CModalFooter>
       </CModal>
         {/* Modal View    */}
-        <CModal
+        {/* <CModal
           visible={modalView}
           onClose={handleModalViewClose}
           size="md"
@@ -452,7 +459,7 @@ const MasterProducts = () => {
               Close
             </CButton>
           </CModalFooter>
-        </CModal>
+        </CModal> */}
 
     </>
   )
