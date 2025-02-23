@@ -140,12 +140,13 @@ const MasterProducts = () => {
       <CTableHead>
         <CTableRow style={{textAlign: "center"}}>
           <CTableHeaderCell>No</CTableHeaderCell>
-          <CTableHeaderCell>Id Products</CTableHeaderCell>
+          <CTableHeaderCell>Id Transactions</CTableHeaderCell>
           <CTableHeaderCell>Product Name</CTableHeaderCell>
           <CTableHeaderCell>Category</CTableHeaderCell>
           <CTableHeaderCell>Price</CTableHeaderCell>
-          <CTableHeaderCell>Stock</CTableHeaderCell>
-          <CTableHeaderCell>Image</CTableHeaderCell>
+          <CTableHeaderCell>Quantity</CTableHeaderCell>
+          <CTableHeaderCell>Customer Name</CTableHeaderCell>
+          <CTableHeaderCell>Cashier</CTableHeaderCell>
         </CTableRow>
       </CTableHead>
       <CTableBody>
@@ -154,25 +155,14 @@ const MasterProducts = () => {
           return (
             <CTableRow key={index} style={{textAlign: "center"}}>
               <CTableDataCell>{actualIndex}</CTableDataCell>
-              <CTableDataCell>{item.ID_PRODUCTS}</CTableDataCell>
-              <CTableDataCell>{item.NAME}</CTableDataCell>
-              <CTableDataCell>{item.CATEGORY}</CTableDataCell>
+              <CTableDataCell>{item.ID_TRANSACTIONS}</CTableDataCell>
+              <CTableDataCell>{item.PRODUCT_NAME}</CTableDataCell>
+              <CTableDataCell>{item.CATEGORY_NAME}</CTableDataCell>
               <CTableDataCell>{formatCurrency(item.PRICE)}</CTableDataCell>
-              <CTableDataCell>{item.STOCK}</CTableDataCell>
-              <CTableDataCell>
-                {/* <CButton
-                  color="secondary"
-                  style={{ borderRadius: 40, width: 75, marginRight: 5 }}
-                  onClick={() => handleClickView(item)}
-                >
-                  View
-                </CButton> */}
-                 <CImage 
-                src={item.IMAGE} 
-                alt="Product Image" 
-                width={150} 
-              />
-              </CTableDataCell>
+              <CTableDataCell>{item.QUANTITY}</CTableDataCell>
+              <CTableDataCell>{item.CUST_NAME}</CTableDataCell>
+              <CTableDataCell>{item.NAMA}</CTableDataCell>
+             
             </CTableRow>
           );
         })}
@@ -192,7 +182,7 @@ const MasterProducts = () => {
       'Authorization': `Bearer ${token}`,
     };
     setIsLoading(true);
-    API.post("/products", {
+    API.post("/transaction", {
       page: currentPage,
       limit: itemsPerPage,
       searchTerm: searchTerm
@@ -321,18 +311,9 @@ const MasterProducts = () => {
 
   return (
     <>
-     <div className="d-flex justify-content-end align-items-center mb-3">
-          <CButton
-            color="primary"
-            style={{ width: 150, height: 50, borderRadius: 15, fontSize: "18px" }}
-            onClick={handleClick}
-          >
-            Add Product
-          </CButton>
-      </div>
       <CCard className="mb-4" style={{borderRadius: 20}}>
         <CCardHeader>
-          <CHeaderBrand>Master Data Products</CHeaderBrand>
+          <CHeaderBrand>Master Data Transaction</CHeaderBrand>
         </CCardHeader>
         <CCardBody>
           <CRow className="mb-3">

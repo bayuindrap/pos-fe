@@ -120,7 +120,7 @@ const Navigation = () => {
         {
           component: CNavItem,
           name: 'Master Transaction',
-          to: '/jumlahObat',
+          to: '/transaction/master',
           icon: <CIcon icon={cilChartLine} customClassName='nav-icon' />,
           roles: ['ROLEGOD', 'ROLEUSER'],
         },

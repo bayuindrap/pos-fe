@@ -27,7 +27,7 @@ import {
      CFormLabel
      } from '@coreui/react';
 import { renderLoading, toast, formatCurrency } from '../../../utils/utils';
-import { cilMagnifyingGlass, cilDollar, cilTrash, cilPlus, cilColorBorder, cilCart } from '@coreui/icons'
+import { cilMagnifyingGlass, cilDollar, cilTrash, cilPlus, cilColorBorder, cilCart, cilMoney, cilDelete } from '@coreui/icons'
 import { CIcon } from '@coreui/icons-react';
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -76,6 +76,7 @@ const SalesPage = () => {
     const handleDeteleCart = () => {
         setCart([]);
         custName.current.value = ""
+        setGrandTotal(0)
     };
 
     const handleClick = () => {
@@ -105,6 +106,75 @@ const SalesPage = () => {
         // setSearchTerm("")
         // setCurrentPage(1)
     };
+
+    // const handleSaveTransactions = () => {
+    //     console.log("cart", cart)
+    //     console.log("paid", amountPaid.current.value)
+    //     console.log("change", change)
+    //     console.log ("custname", custName.current.value)
+    //     console.log("date", today)
+    // }
+
+    async function addTransaction(e) {
+        const token = sessionTokens;
+        if (!token) {
+            toast("error", "Token not found");
+            setIsLoading(false);
+            return;
+        }
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        };
+        e.preventDefault();
+        setIsLoading(true); // Menandakan bahwa proses sedang berjalan
+        
+        // Ambil data dari form atau state yang sudah ada
+        const cartData = cart; // Data produk yang ada dalam keranjang
+        const amountPaidValue = amountPaid.current.value; // Jumlah yang dibayar
+        const changeValue = change; // Kembalian
+        const customerName = custName.current.value; // Nama pelanggan
+        const date = today; // Tanggal transaksi
+        const cashierId = sessionData[0].ID_USERS; // ID kasir, bisa diambil dari sesi yang sedang aktif
+        
+        // console.log("sess", cartData)
+        try {
+            // Mengirim request ke backend
+            const result = await API.post('transaction/add', {
+                cart: cartData,
+                amountPaid: amountPaidValue,
+                change: changeValue,
+                custName: customerName,
+                today: date,
+                cashierId: cashierId,
+            }, { headers });
+    
+            // Menangani respon dari server
+            if (result.data.status) {
+                Swal.fire({
+                    title: result.data.message,
+                    icon: "success",
+                    showConfirmButton: false,
+                    position: "center",
+                    timer: 2500,
+                });
+    
+                // Setelah selesai, bisa melakukan refresh atau redirect
+                setTimeout(() => {
+                    window.location.reload(); // Bisa sesuaikan sesuai kebutuhan
+                }, 2500);
+            } else {
+                toast("error", result.data.message); // Menampilkan pesan error jika status false
+            }
+        } catch (error) {
+            toast("error", error.message); // Menangani error
+        } finally {
+            setIsLoading(false); // Menandakan bahwa proses selesai
+        }
+    }
+    
+
+
     const handleQuantityChange = (productId, quantity) => {
         // Parse the input to ensure it's a valid number
         const parsedQuantity = parseInt(quantity, 10);
@@ -454,10 +524,17 @@ const SalesPage = () => {
 
                             <CRow className="mt-3 justify-content-end">
                                 <CCol xs="auto">
-                                    <CButton color="danger" style={{borderRadius: 20}} onClick={handleDeteleCart}>Delete Cart</CButton>
+                                    <CButton color="danger" style={{borderRadius: 20, width: 170}} onClick={handleDeteleCart}><CIcon icon={cilDelete}/> Delete Cart</CButton>
                                 </CCol>
                                 <CCol xs="auto">
-                                    <CButton color="success" style={{borderRadius: 20}} onClick={handleModalPayment}>Process Payment</CButton>
+                                <CButton
+                                     color="success"
+                                     type="submit"
+                                     style={{ borderRadius: 20, width: 170 }}
+                                     onClick={handleModalPayment}>
+                                     <CIcon icon={cilMoney}/>  Process Payment
+                                     </CButton>
+                                    {/* <CButton color="success" style={{borderRadius: 20, width: 200}} onClick={handleModalPayment}><CIcon icon={cilMoney} /> Process Payment</CButton> */}
                                 </CCol>
                             </CRow>
                         </CCardBody>
@@ -612,7 +689,7 @@ const SalesPage = () => {
                             <CButton color="danger" style={{borderRadius:20, width: 75}} onClick={handleModalPaymentClose}>
                               Cancel
                             </CButton>
-                            <CButton color="success" style={{borderRadius:20, width: 75}}>Save</CButton>
+                            <CButton color="success" style={{borderRadius:20, width: 75}} onClick={addTransaction}>Save</CButton>
                           </CModalFooter>
                         </CModal>
                 </CCol>
