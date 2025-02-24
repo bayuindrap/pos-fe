@@ -73,7 +73,7 @@ const SalesPage = () => {
         setSearchTerm(event.target.value);
     };
 
-    const handleDeteleCart = () => {
+    const handleDeleteCart = () => {
         setCart([]);
         custName.current.value = ""
         setGrandTotal(0)
@@ -93,6 +93,9 @@ const SalesPage = () => {
     };
 
     const handleModalPayment = () => {
+        if (custName.current.value === ""){
+            return toast("error", 'Customer name cant be empty')
+        }
         setModalPayment(true);
         // setNewQuantity(product.quantity.toString());
         // setEditModalVisible(true);
@@ -198,6 +201,44 @@ const SalesPage = () => {
         setModal(false);  // Close the modal when a product is selected
     };
 
+    // const handleAddToCart = () => {
+    //     if (!selectedProduct) {
+    //         toast("error", "Please select a product.");
+    //         return;
+    //     }
+    
+    //     const quantity = quantities[selectedProduct.ID] || 0;
+    
+    //     if (quantity <= 0 || isNaN(quantity)) {
+    //         toast("error", "Quantity must be greater than zero.");
+    //         return;
+    //     }
+    
+    //     // Add the selected product with its quantity to the cart
+    //     const updatedCart = [...cart, { ...selectedProduct, quantity }];
+    //     setCart(updatedCart); // Update the cart with new product
+    //     toast("success", `${selectedProduct.NAME} has been added with quantity: ${quantity}`);
+    
+    //     setSelectedProduct(null); 
+    //     setQuantities({}); 
+
+    //     setIsLoad(true)
+    //     setTimeout(() => {
+    //     const total = cart.reduce((sum, item) => {
+    //         return sum + (item.PRICE * item.quantity);
+    //     }, 0);
+
+    //     setGrandTotal(total);
+    //     setIsLoad(false); 
+    //  }, 850);
+    // };
+
+    const calculateGrandTotal = (cartItems) => {
+        return cartItems.reduce((sum, item) => {
+            return sum + (item.PRICE * item.quantity);
+        }, 0);
+    };
+
     const handleAddToCart = () => {
         if (!selectedProduct) {
             toast("error", "Please select a product.");
@@ -213,24 +254,18 @@ const SalesPage = () => {
     
         // Add the selected product with its quantity to the cart
         const updatedCart = [...cart, { ...selectedProduct, quantity }];
-        setCart(updatedCart); // Update the cart with new product
+        setCart(updatedCart);
+        
+        // Calculate the total using the shared function
+        setGrandTotal(calculateGrandTotal(updatedCart));
+        setIsLoad(false);
+    
         toast("success", `${selectedProduct.NAME} has been added with quantity: ${quantity}`);
     
-        setSelectedProduct(null); // Reset selected product after adding to cart
-        setQuantities({}); // Reset quantities
+        setSelectedProduct(null);
+        setQuantities({});
     };
-
-    const handleCalculateGrandTotal = () => {
-        setIsLoad(true)
-        setTimeout(() => {
-        const total = cart.reduce((sum, item) => {
-            return sum + (item.PRICE * item.quantity);
-        }, 0);
-
-        setGrandTotal(total);
-        setIsLoad(false); 
-     }, 1250);
-    };
+    
 
     const handleCalculatePayment = () => {
         // Memastikan amountPaid sudah terisi dan valid
@@ -299,7 +334,6 @@ const SalesPage = () => {
     }
 
     const handleRemoveFromCart = async (productId) => {
-        // Menampilkan SweetAlert2 untuk konfirmasi
         const productToRemove = cart.find(item => item.ID_PRODUCTS === productId);
         const confirmationResult = await Swal.fire({
             title: `Remove ${productToRemove.NAME}?`,
@@ -316,14 +350,15 @@ const SalesPage = () => {
             }
         });
     
-        // Jika pengguna mengonfirmasi penghapusan
         if (confirmationResult.isConfirmed) {
-            // Hapus produk dengan ID yang sesuai dari cart
             const updatedCart = cart.filter(item => item.ID_PRODUCTS !== productId);
-            setCart(updatedCart); // Update state cart
+            setCart(updatedCart);
+            // Update grand total after removing item
+            setGrandTotal(calculateGrandTotal(updatedCart));
             toast("success", `${productToRemove.NAME} has been removed`);
         }
     };
+
 
     // Fungsi untuk membuka modal edit dengan product tertentu
     const handleOpenEditModal = (product) => {
@@ -337,11 +372,11 @@ const SalesPage = () => {
         const quantity = parseInt(newQuantity, 10);
         
         if (isNaN(quantity) || quantity <= 0) {
-            Swal.fire('Error', 'Quantity must be greater than zero!', 'error');
+            Swal.fire('Error', 'Quantity must be greater than zero', 'error');
             return;
         }
 
-        // Update cart dengan quantity baru
+        // Update cart with quantity baru
         const updatedCart = cart.map(item => {
             if (item.ID_PRODUCTS === editingProduct.ID_PRODUCTS) {
                 return { ...item, quantity: quantity };
@@ -349,7 +384,10 @@ const SalesPage = () => {
             return item;
         });
 
+        // Update cart and grand total
         setCart(updatedCart);
+        setGrandTotal(calculateGrandTotal(updatedCart));
+        
         toast("success", `Quantity for ${editingProduct.NAME} updated to ${quantity}`);
         setEditModalVisible(false);
         setEditingProduct(null);
@@ -485,7 +523,7 @@ const SalesPage = () => {
                                     )}
                                 </CTableBody>
                             </CTable>
-                            {cart.length > 0 ?(
+                            {/* {cart.length > 0 ?(
 
                             <CCol sm={12} className="mb-3 d-flex justify-content-end">
                                               <CButton
@@ -497,7 +535,7 @@ const SalesPage = () => {
                                                Count<CIcon icon={cilDollar}/> 
                                               </CButton>
                                          </CCol>
-                            ) : <div></div>}
+                            ) : <div></div>} */}
 
                             {/* Totals Section */}
                             <CRow className="mt-3">
@@ -524,7 +562,7 @@ const SalesPage = () => {
 
                             <CRow className="mt-3 justify-content-end">
                                 <CCol xs="auto">
-                                    <CButton color="danger" style={{borderRadius: 20, width: 170}} onClick={handleDeteleCart}><CIcon icon={cilDelete}/> Delete Cart</CButton>
+                                    <CButton color="danger" style={{borderRadius: 20, width: 170}} onClick={handleDeleteCart}><CIcon icon={cilDelete}/> Delete Cart</CButton>
                                 </CCol>
                                 <CCol xs="auto">
                                 <CButton
@@ -642,7 +680,7 @@ const SalesPage = () => {
                           size="md"
                         >
                           <CModalHeader closeButton>
-                            <CModalTitle>Payment</CModalTitle>
+                            <CModalTitle>{custName.current.value}'s Cart Payment</CModalTitle>
                           </CModalHeader>
                           <CModalBody>
                             {/* {selectedFamily && ( */}

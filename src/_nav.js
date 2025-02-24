@@ -80,13 +80,6 @@ const Navigation = () => {
     },
     {
       component: CNavItem,
-      name: 'Product',
-      to: '/jumlahPasien',
-      icon: <CIcon icon={cilGift} customClassName='nav-icon' />,
-      roles: ['ROLEGOD', 'ROLEUSER'],
-    },
-    {
-      component: CNavItem,
       name: 'POS',
       to: '/POS',
       icon: <CIcon icon={cilScreenDesktop} customClassName='nav-icon' />,

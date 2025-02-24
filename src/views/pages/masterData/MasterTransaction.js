@@ -32,108 +32,88 @@ import { sessionSelector, sessionToken } from "../../../redux/slicer/sessionSlic
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import PaginationComponent from '../../../components/PaginationComponent'
-import { toast, renderLoading, formatCurrency } from '../../../utils/utils'
+import { toast, renderLoading, formatCurrency, formatDateTime } from '../../../utils/utils'
 import API from '../../../service/api'
 import Swal from "sweetalert2";
 import axios from "axios";
 import { CloudinaryContext, Image, Video, Transformation } from 'cloudinary-react';
 
 const MasterProducts = () => {
+  const [sortBy, setSortBy] = useState('');
   const navigate = useNavigate()
   const sessionData = useSelector(sessionSelector);
   const sessionTokens = useSelector(sessionToken);
   const [searchTerm, setSearchTerm] = useState('')
   const [data, setData] = useState([]);
+  const [dataDetail, setDataDetail] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalItems, setTotalItems] = useState(0);
   const [modal, setModal] = React.useState(false);
-  const [modalView, setModalView] = React.useState(false);
-  const [category, setCategory] = useState([])
-  const [selectedCategory, setSelectedCategory] = React.useState(null)
-  const [imageFile, setImageFile] = useState(null);
   const [selectedProduct, setSelectedProduct] = React.useState(null);
-  const [imageUrl, setImageUrl] = useState('');
-  const addName = useRef("")
-  const addPrice = useRef("")
-  const addStock = useRef("")
-
   
   
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
+  };
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value)
   }
 
-  const handleClick = () => {
+  const handleClick = (item) => {
+    const trxId = item.ID_TRANSACTIONS
     setModal(true)
-    getCategory()
+    getTransactionDetail(trxId)
   }
 
-  const handleClickView = (item) => {
-    setModalView(true)
-    setSelectedProduct(item)
-  }
+ 
 
   const handleModalClose = () => {
     setModal(false);
-    setSelectedCategory(null);
+    // setSelectedCategory(null);
   };
+ 
 
-  const handleModalViewClose = () => {
-    setModalView(false);
-    setSelectedProduct(null)
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
+  const handleDownload = async () => {
+    setIsLoading(true);
+    const token = sessionTokens; // Menggunakan session token
+    if (!token) {
+      toast("error", "Token not found");
+      setIsLoading(false);
+      return;
     }
+    
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    };
+    API.get(`/transaction/download`, {
+      params: {
+        searchTerm: searchTerm, // Mengirimkan filter yang diterapkan
+        sortBy: sortBy, // Mengirimkan filter pengurutan
+      },
+      headers,
+      responseType: "blob",
+    })
+      .then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", 'Data Transactions.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        toast("success", "Data downloaded");
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        toast("error", error.message);
+        setIsLoading(false);
+      });
   };
   
 
-  const handleDownload = async () => {
-    setIsLoading(true)
-    API.get(`/products/download`, {
-      responseType: "blob",
-    })
-    .then((response) => {
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", 'Data Products.xlsx');
-      document.body.appendChild(link);
-      link.click();
-      toast("success", "Data downloaded");
-      setIsLoading(false)
-    })
-    .catch((error) => {
-      toast("error", error.message);
-     setIsLoading(false)
-    });
-  };
-
-
-  async function getCategory () {
-    setIsLoading(true)
-    API.post('products/category', {
-    })
-    .then(result => {
-      if (result.data.status) {
-        const fetchedData = result.data.data
-        setCategory(fetchedData)
-        setIsLoading(false)
-      } else {
-        setIsLoading(false)
-        toast("error", result.data.message);
-      }
-    })
-    .catch(e => {
-      toast("error", e.message);
-    })
-}
 
   const renderTable = () => (
     <CTable align="middle" className="mb-0 border" hover responsive>
@@ -141,12 +121,10 @@ const MasterProducts = () => {
         <CTableRow style={{textAlign: "center"}}>
           <CTableHeaderCell>No</CTableHeaderCell>
           <CTableHeaderCell>Id Transactions</CTableHeaderCell>
-          <CTableHeaderCell>Product Name</CTableHeaderCell>
-          <CTableHeaderCell>Category</CTableHeaderCell>
-          <CTableHeaderCell>Price</CTableHeaderCell>
-          <CTableHeaderCell>Quantity</CTableHeaderCell>
           <CTableHeaderCell>Customer Name</CTableHeaderCell>
-          <CTableHeaderCell>Cashier</CTableHeaderCell>
+          <CTableHeaderCell>Total Amount</CTableHeaderCell>
+          <CTableHeaderCell>Date</CTableHeaderCell>
+          <CTableHeaderCell>Action</CTableHeaderCell>
         </CTableRow>
       </CTableHead>
       <CTableBody>
@@ -156,13 +134,18 @@ const MasterProducts = () => {
             <CTableRow key={index} style={{textAlign: "center"}}>
               <CTableDataCell>{actualIndex}</CTableDataCell>
               <CTableDataCell>{item.ID_TRANSACTIONS}</CTableDataCell>
-              <CTableDataCell>{item.PRODUCT_NAME}</CTableDataCell>
-              <CTableDataCell>{item.CATEGORY_NAME}</CTableDataCell>
-              <CTableDataCell>{formatCurrency(item.PRICE)}</CTableDataCell>
-              <CTableDataCell>{item.QUANTITY}</CTableDataCell>
               <CTableDataCell>{item.CUST_NAME}</CTableDataCell>
-              <CTableDataCell>{item.NAMA}</CTableDataCell>
-             
+              <CTableDataCell>{formatCurrency(item.TOTAL_AMOUNT)}</CTableDataCell>
+              <CTableDataCell>{formatDateTime(item.DATE)}</CTableDataCell>
+              <CTableDataCell>
+                <CButton
+                    color="primary"
+                    style={{ borderRadius: 40, width: 75, marginRight: 5 }}
+                    onClick={() => handleClick(item)}
+                  >
+                    Detail
+                  </CButton>
+            </CTableDataCell>
             </CTableRow>
           );
         })}
@@ -170,7 +153,87 @@ const MasterProducts = () => {
     </CTable>
   );
 
-  async function getProducts() {
+ 
+  // async function getTransactions() {
+  //   const token = sessionTokens
+  //   if (!token) {
+  //     toast("error", "Token not found");
+  //     setIsLoading(false);
+  //     return;
+  //   }
+  //   const headers = {
+  //     'Content-Type': 'application/json',
+  //     'Authorization': `Bearer ${token}`,
+  //   };
+  //   setIsLoading(true);
+  //   API.post("/transaction", {
+  //     page: currentPage,
+  //     limit: itemsPerPage,
+  //     searchTerm: searchTerm
+  //   },
+  //   {headers}
+  // )
+  //     .then((result) => {
+  //       if (result.data.status) {
+  //         const fetchedData = result.data.data;
+  //         setData(fetchedData);
+  //         setTotalItems(result.data.totalItems);
+  //         setIsLoading(false);
+  //       } else {
+  //         setIsLoading(false);
+  //         setData([])
+  //         setTotalItems(0)
+  //         toast("error", result.data.message);
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       setIsLoading(false);
+  //       toast("error", error.message);
+  //     });
+  // }
+
+  async function getTransactions() {
+    const token = sessionTokens; // Menggunakan session token
+    if (!token) {
+      toast("error", "Token not found");
+      setIsLoading(false);
+      return;
+    }
+    
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    };
+
+    setIsLoading(true);
+
+    API.post("/transaction", {
+      page: currentPage,
+      limit: itemsPerPage,
+      searchTerm: searchTerm,
+      sortBy: sortBy
+    }, { headers })
+      .then((result) => {
+        if (result.data.status) {
+          const fetchedData = result.data.data;
+          setData(fetchedData);
+          setTotalItems(result.data.totalItems);
+        } else {
+          setData([]);
+          setTotalItems(0);
+          toast("error", result.data.message);
+        }
+      })
+      .catch((error) => {
+        toast("error", error.message);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }
+
+
+  async function getTransactionDetail(trxId) {
     const token = sessionTokens
     if (!token) {
       toast("error", "Token not found");
@@ -182,23 +245,23 @@ const MasterProducts = () => {
       'Authorization': `Bearer ${token}`,
     };
     setIsLoading(true);
-    API.post("/transaction", {
+    API.post("/transaction/detail", {
       page: currentPage,
       limit: itemsPerPage,
-      searchTerm: searchTerm
+      trxId: trxId
     },
     {headers}
   )
       .then((result) => {
         if (result.data.status) {
           const fetchedData = result.data.data;
-          setData(fetchedData);
-          setTotalItems(result.data.totalItems);
+          setDataDetail(fetchedData);
+          // setTotalItems(result.data.totalItems);
           setIsLoading(false);
         } else {
           setIsLoading(false);
-          setData([])
-          setTotalItems(0)
+          setDataDetail([])
+          // setTotalItems(0)
           toast("error", result.data.message);
         }
       })
@@ -206,108 +269,19 @@ const MasterProducts = () => {
         setIsLoading(false);
         toast("error", error.message);
       });
-  }
 
-  async function addProducts () {
-    // console.log("data", selectedFamily.RELATION_ID)
-    const confirmationResult = await Swal.fire({
-      title: `Add product ${addName.current.value}?`,
-      showCancelButton: true,
-      confirmButtonText: 'Save',
-      cancelButtonText: 'Cancel',
-      cancelButtonColor: '#D49612',
-      confirmButtonColor: '#28a745',
-      reverseButtons: true,
-      style: {
-        confirmButton: 'width: 75px',
-        cancelButton: 'width: 75px'
-      }
-    })
-    if (confirmationResult.isConfirmed) {
-      const token = sessionTokens
-      if (!token) {
-        toast("error", "Token not found");
-        setIsLoading(false);
-        return;
-      }
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      };
-      setIsLoading(true)
-      const imageUrl = await uploadToCloudinary(imageFile);
-    
-    if (!imageUrl) {
-      setIsLoading(false);
-      return;
-    }
-      await API
-        .post('products/add', {
-          prodName : addName.current.value,
-          price : addPrice.current.value,
-          category : selectedCategory,
-          stock : addStock.current.value,
-          imageUrl: imageUrl
-        },
-        {headers}
-      )
-        .then(result => {   
-           console.log(result)
-          if (result.data.status) {
-            getProducts()
-            setIsLoading(false)
-            setModal(false)
-            toast("success", result.data.message);
-            // window.location.reload()
-          } else {
-            console.log("cekres",result)
-            toast("error", result.message);
-          }
-          setIsLoading(false)
-        })
-        .catch(e => {
-          setIsLoading(false)
-          toast("error", e.message);
-        })
-    } else if (confirmationResult.isDenied) {
-      Swal.fire('Changes are not saved', '', 'info')
-    }
+
   }
 
 
-  const uploadToCloudinary = async (image) => {
-    if (!image) return null;
-  
-    const formData = new FormData();
-    formData.append('file', image);
-    formData.append('upload_preset', 'POS Apps'); 
-  
-    try {
-      const response = await fetch('https://api.cloudinary.com/v1_1/dhsskvrzl/image/upload', {
-        method: 'POST',
-        body: formData,
-      });
-  
-      const result = await response.json();
-  
-      if (result.secure_url) {
-        return result.secure_url
-      }
-  
-      throw new Error('Upload failed');
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      return null;
-    }
-  };
 
 
   
 
 
   useEffect(() => {
-    getProducts()
-  }, [currentPage, itemsPerPage, searchTerm])
+    getTransactions()
+  }, [currentPage, itemsPerPage, searchTerm, sortBy])
 
   return (
     <>
@@ -317,21 +291,37 @@ const MasterProducts = () => {
         </CCardHeader>
         <CCardBody>
           <CRow className="mb-3">
-          <CCol sm={12} className="mb-3 d-flex justify-content-end">
-                  <CButton
-                    color="success"
-                    type="submit"
-                    style={{ borderRadius: 40 }}
-                    onClick={handleDownload}
-                  >
-                   Download <CIcon icon={cilCloudDownload}/> 
-                  </CButton>
-             </CCol>
-            <CCol sm={12}>
-            <CInputGroup>
+            {/* Button Download di pojok kanan atas */}
+            <CCol sm={12} className="d-flex justify-content-end mb-3">
+              <CButton
+                color="success"
+                type="submit"
+                style={{ borderRadius: 40 }}
+                onClick={handleDownload}
+              >
+                Download <CIcon icon={cilCloudDownload} />
+              </CButton>
+            </CCol>
+
+            {/* Form Sort By */}
+            <CCol sm={6} className="mb-3">
+              <CFormLabel>Sort By</CFormLabel>
+              <CFormSelect value={sortBy} onChange={handleSortChange}>
+                <option value="">Select</option>
+                <option value="amount_asc">Amount Asc</option>
+                <option value="amount_desc">Amount Desc</option>
+                <option value="date_asc">Date Asc</option>
+                <option value="date_desc">Date Desc</option>
+             </CFormSelect>
+            </CCol>
+
+            {/* Search Input */}
+            <CCol sm={6} className="mb-3">
+              <CFormLabel>Find Customer</CFormLabel>
+              <CInputGroup>
                 <CFormInput
                   type="text"
-                  placeholder="Find Products..."
+                  placeholder="Search by customer name"
                   value={searchTerm}
                   onChange={handleSearch}
                 />
@@ -340,7 +330,10 @@ const MasterProducts = () => {
                 </CInputGroupText>
               </CInputGroup>
             </CCol>
-          </CRow>
+         </CRow>
+
+
+
           {isLoading ? renderLoading() : renderTable()}
            <div className="mt-4">
           <PaginationComponent
@@ -357,59 +350,51 @@ const MasterProducts = () => {
       <CModal
         visible={modal}
         onClose={handleModalClose}
-        size="md"
+        size="xl"
       >
         <CModalHeader closeButton>
-          <CModalTitle>Add Product</CModalTitle>
+          <CModalTitle>Detail Transaction</CModalTitle>
         </CModalHeader>
         <CModalBody>
           {/* {selectedFamily && ( */}
-            <CForm>
-              <CFormLabel>Product Name</CFormLabel>
-              <CFormInput
-                // defaultValue={selectedFamily.FAMILY_NM}
-                ref={addName}
-              />
-              <CFormSelect
-                label="Category"
-                // defaultValu  e={selectedFamily.GENDER_ID}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                options={[
-                  { label: "Select category", value: "" },
-                  ...category.map((cat) => ({
-                    label: cat.CATEGORY_NAME,
-                    value: cat.ID_CATEGORY,
-                  })),
-                ]}
-              />
-               <CFormLabel>Price</CFormLabel>
-              <CFormInput
-                id="namaPasien"
-                // defaultValue={selectedFamily.FAMILY_NM}
-                ref={addPrice}
-              />
-               <CFormLabel>Stock</CFormLabel>
-             <CFormInput
-                id="namaPasien"
-                // defaultValue={selectedFamily.FAMILY_NM}
-                ref={addStock}
-              />
-            </CForm>
-            <CFormLabel>Product Image</CFormLabel>
-            <CFormInput
-              type="file"
-              onChange={handleFileChange}
-              accept="image/*"
-            />
-
-          {/* )} */}
+          <CTable align="middle" className="mb-0 border" hover responsive>
+          <CTableHead>
+            <CTableRow style={{textAlign: "center"}}>
+              <CTableHeaderCell>No</CTableHeaderCell>
+              <CTableHeaderCell>Id Detail Transactions</CTableHeaderCell>
+              <CTableHeaderCell>Product Name</CTableHeaderCell>
+              <CTableHeaderCell>Category</CTableHeaderCell>
+              <CTableHeaderCell>Price</CTableHeaderCell>
+              <CTableHeaderCell>Quantity</CTableHeaderCell>
+              <CTableHeaderCell>Customer Name</CTableHeaderCell>
+              <CTableHeaderCell>Cashier</CTableHeaderCell>
+            </CTableRow>
+          </CTableHead>
+          <CTableBody>
+            {dataDetail?.map((item, index) => {
+              const actualIndex = (currentPage - 1) * itemsPerPage + index + 1;
+              return (
+                <CTableRow key={index} style={{textAlign: "center"}}>
+                  <CTableDataCell>{actualIndex}</CTableDataCell>
+                  <CTableDataCell>{item.TRXID}</CTableDataCell>
+                  <CTableDataCell>{item.PRODUCT_NAME}</CTableDataCell>
+                  <CTableDataCell>{item.CATEGORY_NAME}</CTableDataCell>
+                  <CTableDataCell>{formatCurrency(item.PRICE)}</CTableDataCell>
+                  <CTableDataCell>{item.QUANTITY}</CTableDataCell>
+                  <CTableDataCell>{item.CUST_NAME}</CTableDataCell>
+                  <CTableDataCell>{item.NAMA}</CTableDataCell>
+                
+            </CTableRow>
+          );
+        })}
+      </CTableBody>
+    </CTable>
            {isLoading ? renderLoading() : null}
         </CModalBody>
         <CModalFooter>
           <CButton color="danger" style={{borderRadius:20, width: 75}} onClick={handleModalClose}>
-            Cancel
+            Close
           </CButton>
-          <CButton color="success" style={{borderRadius:20, width: 75}} onClick={addProducts}>Add</CButton>
         </CModalFooter>
       </CModal>
    
