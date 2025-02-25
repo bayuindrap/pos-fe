@@ -25,6 +25,7 @@ import {
   CFormLabel,
   CFormSelect,
   CImage,
+  CFormText
 } from "@coreui/react";
 import CIcon from '@coreui/icons-react'
 import { cilMagnifyingGlass,cilCloudDownload } from '@coreui/icons'
@@ -46,15 +47,30 @@ const MasterProducts = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalItems, setTotalItems] = useState(0);
   const [modal, setModal] = React.useState(false);
+  const [modalEdit, setModalEdit] = React.useState(false);
   const [category, setCategory] = useState([])
   const [selectedCategory, setSelectedCategory] = React.useState(null)
+  const [selectedProduct, setSelectedProduct] = React.useState(null);
   const [imageFile, setImageFile] = useState(null);
   const addName = useRef("")
   const addPrice = useRef("")
   const addStock = useRef("")
+  const editName = useRef("")
+  const editPrice = useRef("")
 
   
   
+  const handleEdit = (item) => {
+    // console.log("cek", item)
+    setModalEdit(true)
+    setSelectedProduct(item)
+    getCategory()
+  }
+
+  const handleModalEditClose = () => {
+    setModalEdit(false);
+    setSelectedProduct(null);
+  };
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value)
@@ -105,6 +121,84 @@ const MasterProducts = () => {
     });
   };
 
+  const handleDelete = async (item) => {
+    // setSelectLevel(item);
+    const idProduct = item.ID_PRODUCTS
+    const confirmationResult = await Swal.fire({
+      title: `Delete ${item.NAME} data?`,
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'Cancel',
+      cancelButtonColor: '#blue',
+      confirmButtonColor: '#d33',
+      reverseButtons: true,
+    });
+    if (confirmationResult.isConfirmed) {
+      setIsLoading(true);
+      API.post("products/delete", { idProduct })
+        .then((result) => {
+          if (result.data.status) {
+            setIsLoading(false);
+            toast("success", result.data.message);
+            getProducts();
+          } else {
+            setIsLoading(false);
+            toast("error", result.data.message);
+          }
+        })
+        .catch((error) => {
+          setIsLoading(false);
+          toast("error", error.message);
+        });
+    }
+  };
+
+  async function updateData () {
+    // console.log("isiprod", selectedProduct)
+    const confirmationResult = await Swal.fire({
+      title: `Update data ${selectedProduct.NAME}?`,
+      showCancelButton: true,
+      confirmButtonText: 'Save',
+      cancelButtonText: 'Cancel',
+      cancelButtonColor: '#D49612',
+      confirmButtonColor: '#28a745',
+      reverseButtons: true,
+      style: {
+        confirmButton: 'width: 75px',
+        cancelButton: 'width: 75px'
+      }
+    })
+    if (confirmationResult.isConfirmed) {
+      setIsLoading(true)
+      await API
+        .post('products/edit', {
+          idProduct: selectedProduct.ID_PRODUCTS,
+          prodName: editName.current.value,
+          prodPrice: editPrice.current.value,
+          category: selectedCategory === null ? selectedProduct.ID_CATEGORY : selectedCategory,
+        })
+        .then(result => {
+          //  console.log(result)
+          if (result.data.status) {
+            getProducts()
+            setIsLoading(false)
+            setModalEdit(false)
+            toast("success", result.data.message);
+          } else {
+            toast("error", result.data.message);
+          }
+          setIsLoading(false)
+          // setProcess(false);
+        })
+        .catch(e => {
+          setIsLoading(false)
+          toast("error", e.message);
+        })
+    } else if (confirmationResult.isDenied) {
+      Swal.fire('Changes are not saved', '', 'info')
+    }
+  }
+
 
   async function getCategory () {
     setIsLoading(true)
@@ -130,44 +224,6 @@ const MasterProducts = () => {
       toast("error", e.message);
     })
 }
-
-  const renderTable = () => (
-    <CTable align="middle" className="mb-0 border" hover responsive>
-      <CTableHead>
-        <CTableRow style={{textAlign: "center"}}>
-          <CTableHeaderCell>No</CTableHeaderCell>
-          <CTableHeaderCell>Image</CTableHeaderCell>
-          <CTableHeaderCell>Id Products</CTableHeaderCell>
-          <CTableHeaderCell>Product Name</CTableHeaderCell>
-          <CTableHeaderCell>Category</CTableHeaderCell>
-          <CTableHeaderCell>Price</CTableHeaderCell>
-          <CTableHeaderCell>Stock</CTableHeaderCell>
-        </CTableRow>
-      </CTableHead>
-      <CTableBody>
-        {data.map((item, index) => {
-          const actualIndex = (currentPage - 1) * itemsPerPage + index + 1;
-          return (
-            <CTableRow key={index} style={{textAlign: "center"}}>
-              <CTableDataCell>{actualIndex}</CTableDataCell>
-              <CTableDataCell>
-                 <CImage 
-                src={item.IMAGE} 
-                alt="Product Image" 
-                width={140} 
-              />
-              </CTableDataCell>
-              <CTableDataCell>{item.ID_PRODUCTS}</CTableDataCell>
-              <CTableDataCell>{item.NAME}</CTableDataCell>
-              <CTableDataCell>{item.CATEGORY}</CTableDataCell>
-              <CTableDataCell>{formatCurrency(item.PRICE)}</CTableDataCell>
-              <CTableDataCell>{item.STOCK}</CTableDataCell>
-            </CTableRow>
-          );
-        })}
-      </CTableBody>
-    </CTable>
-  );
 
   async function getProducts() {
     const token = sessionTokens
@@ -297,6 +353,61 @@ const MasterProducts = () => {
     }
   };
 
+  const renderTable = () => (
+    <CTable align="middle" className="mb-0 border" hover responsive>
+      <CTableHead>
+        <CTableRow style={{textAlign: "center"}}>
+          <CTableHeaderCell>No</CTableHeaderCell>
+          <CTableHeaderCell>Image</CTableHeaderCell>
+          <CTableHeaderCell>Id Products</CTableHeaderCell>
+          <CTableHeaderCell>Product Name</CTableHeaderCell>
+          <CTableHeaderCell>Category</CTableHeaderCell>
+          <CTableHeaderCell>Price</CTableHeaderCell>
+          <CTableHeaderCell>Stock</CTableHeaderCell>
+          <CTableHeaderCell>Action</CTableHeaderCell>
+        </CTableRow>
+      </CTableHead>
+      <CTableBody>
+        {data.map((item, index) => {
+          const actualIndex = (currentPage - 1) * itemsPerPage + index + 1;
+          return (
+            <CTableRow key={index} style={{textAlign: "center"}}>
+              <CTableDataCell>{actualIndex}</CTableDataCell>
+              <CTableDataCell>
+                 <CImage 
+                src={item.IMAGE} 
+                alt="Product Image" 
+                width={140} 
+              />
+              </CTableDataCell>
+              <CTableDataCell>{item.ID_PRODUCTS}</CTableDataCell>
+              <CTableDataCell>{item.NAME}</CTableDataCell>
+              <CTableDataCell>{item.CATEGORY}</CTableDataCell>
+              <CTableDataCell>{formatCurrency(item.PRICE)}</CTableDataCell>
+              <CTableDataCell>{item.STOCK}</CTableDataCell>
+              <CTableDataCell>
+              <CButton
+                  color="warning"
+                  style={{ borderRadius: 40, width: 75, marginRight: 5 }}
+                  onClick={() => handleEdit(item)}
+                >
+                  Edit
+                </CButton>
+              <CButton
+                  color="danger"
+                  style={{ borderRadius: 40, width: 75, marginRight: 5 }}
+                  onClick={() => handleDelete(item)}
+                >
+                  Delete
+                </CButton>
+            </CTableDataCell>
+            </CTableRow>
+          );
+        })}
+      </CTableBody>
+    </CTable>
+  );
+
 
   
 
@@ -358,6 +469,7 @@ const MasterProducts = () => {
           
         </CCardBody>
       </CCard>
+
       <CModal
         visible={modal}
         onClose={handleModalClose}
@@ -409,6 +521,56 @@ const MasterProducts = () => {
             Cancel
           </CButton>
           <CButton color="success" style={{borderRadius:20, width: 75}} onClick={addProducts}>Add</CButton>
+        </CModalFooter>
+      </CModal>
+
+      <CModal
+        visible={modalEdit}
+        onClose={handleModalEditClose}
+        size="md"
+      >
+        <CModalHeader closeButton>
+          <CModalTitle>Edit Product</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+                {selectedProduct && (
+                   <CForm>
+                   <CFormLabel>Product Name</CFormLabel>
+                   <CFormInput
+                     type="text"
+                     defaultValue={selectedProduct.NAME}
+                     ref={editName}
+                   />
+                   <CFormLabel>Price</CFormLabel>
+                   <CFormInput
+                     type="number"
+                     defaultValue={selectedProduct.PRICE}
+                     onInput={(e) => {
+                      e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 14);
+                    }}
+                     ref={editPrice}
+                   />
+                   <CFormSelect
+                    label="Category"
+                    defaultValue={selectedProduct.CATEGORY}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    options={[
+                      { label: "Select category", value: "" },
+                      ...category.map((cat) => ({
+                        label: cat.CATEGORY_NAME,
+                        value: cat.ID_CATEGORY,
+                      })),
+                    ]}
+                  />
+                 </CForm>
+                )}
+                {isLoading ? renderLoading() : null}
+              </CModalBody>
+        <CModalFooter>
+          <CButton color="danger" style={{borderRadius:20, width: 75}} onClick={handleModalEditClose}>
+            Cancel
+          </CButton>
+          <CButton color="success" style={{borderRadius:20, width: 75}} onClick={updateData}>Save</CButton>
         </CModalFooter>
       </CModal>
    
