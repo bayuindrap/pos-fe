@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import mainStore from './redux/store/mainStore'
 import 'core-js'
-import './custom.css';
+
 
 import App from './App'
 import store from './store'

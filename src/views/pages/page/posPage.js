@@ -30,19 +30,16 @@ import { renderLoading, toast, formatCurrency } from '../../../utils/utils';
 import { cilMagnifyingGlass, cilDollar, cilTrash, cilPlus, cilColorBorder, cilCart, cilMoney, cilDelete } from '@coreui/icons'
 import { CIcon } from '@coreui/icons-react';
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
 import { sessionSelector, sessionToken } from "../../../redux/slicer/sessionSlicer";
 import API from '../../../service/api'
 import Swal from "sweetalert2";
 import PaginationComponent from "../../../components/PaginationComponent";
-import { Modal } from "bootstrap";
+
 
 
 const SalesPage = () => {
-    const navigate = useNavigate();
     const sessionData = useSelector(sessionSelector);
     const sessionTokens = useSelector(sessionToken);
-    const [data, setData] = useState([]);
     const [dataProducts, setDataProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoad, setIsLoad] = useState(false);
@@ -84,7 +81,6 @@ const SalesPage = () => {
         getProducts();
     };
 
-    // Close modal
     const handleModalClose = () => {
         setModal(false);
         setDataProducts([])
@@ -110,13 +106,6 @@ const SalesPage = () => {
         // setCurrentPage(1)
     };
 
-    // const handleSaveTransactions = () => {
-    //     console.log("cart", cart)
-    //     console.log("paid", amountPaid.current.value)
-    //     console.log("change", change)
-    //     console.log ("custname", custName.current.value)
-    //     console.log("date", today)
-    // }
 
     async function addTransaction(e) {
         const token = sessionTokens;
@@ -130,19 +119,19 @@ const SalesPage = () => {
             'Authorization': `Bearer ${token}`,
         };
         e.preventDefault();
-        setIsLoading(true); // Menandakan bahwa proses sedang berjalan
+        setIsLoading(true); 
         
-        // Ambil data dari form atau state yang sudah ada
-        const cartData = cart; // Data produk yang ada dalam keranjang
-        const amountPaidValue = amountPaid.current.value; // Jumlah yang dibayar
-        const changeValue = change; // Kembalian
-        const customerName = custName.current.value; // Nama pelanggan
-        const date = today; // Tanggal transaksi
-        const cashierId = sessionData[0].ID_USERS; // ID kasir, bisa diambil dari sesi yang sedang aktif
+       
+        const cartData = cart; 
+        const amountPaidValue = amountPaid.current.value; 
+        const changeValue = change; 
+        const customerName = custName.current.value; 
+        const date = today;
+        const cashierId = sessionData[0].ID_USERS; 
         
         // console.log("sess", cartData)
         try {
-            // Mengirim request ke backend
+            
             const result = await API.post('transaction/add', {
                 cart: cartData,
                 amountPaid: amountPaidValue,
@@ -152,7 +141,7 @@ const SalesPage = () => {
                 cashierId: cashierId,
             }, { headers });
     
-            // Menangani respon dari server
+           
             if (result.data.status) {
                 Swal.fire({
                     title: result.data.message,
@@ -162,27 +151,25 @@ const SalesPage = () => {
                     timer: 2500,
                 });
     
-                // Setelah selesai, bisa melakukan refresh atau redirect
+           
                 setTimeout(() => {
-                    window.location.reload(); // Bisa sesuaikan sesuai kebutuhan
+                    window.location.reload(); 
                 }, 2500);
             } else {
-                toast("error", result.data.message); // Menampilkan pesan error jika status false
+                toast("error", result.data.message); 
             }
         } catch (error) {
-            toast("error", error.message); // Menangani error
+            toast("error", error.message); 
         } finally {
-            setIsLoading(false); // Menandakan bahwa proses selesai
+            setIsLoading(false); 
         }
     }
     
 
 
     const handleQuantityChange = (productId, quantity) => {
-        // Parse the input to ensure it's a valid number
         const parsedQuantity = parseInt(quantity, 10);
 
-        // If parsedQuantity is NaN or less than 1, reset the quantity to empty string
         if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
             setQuantities((prevQuantities) => ({
                 ...prevQuantities,
@@ -198,7 +185,7 @@ const SalesPage = () => {
 
     const handleProductSelect = (product) => {
         setSelectedProduct(product);
-        setModal(false);  // Close the modal when a product is selected
+        setModal(false); 
     };
 
     // const handleAddToCart = () => {
@@ -238,56 +225,82 @@ const SalesPage = () => {
             return sum + (item.PRICE * item.quantity);
         }, 0);
     };
-
+    // const handleAddToCart = () => {
+    //     if (!selectedProduct) {
+    //         toast("error", "Please select a product.");
+    //         return;
+    //     }
+    
+    //     const quantity = quantities[selectedProduct.ID] || 0;
+    
+    //     if (quantity <= 0 || isNaN(quantity)) {
+    //         toast("error", "Quantity must be greater than zero.");
+    //         return;
+    //     }
+    
+   
+    //     const updatedCart = [...cart, { ...selectedProduct, quantity }];
+    //     setCart(updatedCart);
+    //     setGrandTotal(calculateGrandTotal(updatedCart));
+    //     setIsLoad(false);
+    //     toast("success", `${selectedProduct.NAME} has been added with quantity: ${quantity}`);
+    //     setSelectedProduct(null);
+    //     setQuantities({});
+    // };
+    
     const handleAddToCart = () => {
         if (!selectedProduct) {
             toast("error", "Please select a product.");
             return;
         }
     
-        const quantity = quantities[selectedProduct.ID] || 0;
+        const quantity = quantities[selectedProduct?.ID] || 0;
     
         if (quantity <= 0 || isNaN(quantity)) {
             toast("error", "Quantity must be greater than zero.");
             return;
         }
+        const existingProductIndex = cart.findIndex(item => item.ID_PRODUCTS === selectedProduct.ID_PRODUCTS);
     
-        // Add the selected product with its quantity to the cart
-        const updatedCart = [...cart, { ...selectedProduct, quantity }];
-        setCart(updatedCart);
+        let updatedCart;
         
-        // Calculate the total using the shared function
+        if (existingProductIndex !== -1) {
+            updatedCart = [...cart];
+            updatedCart[existingProductIndex] = {
+                ...updatedCart[existingProductIndex],
+                quantity: updatedCart[existingProductIndex].quantity + parseInt(quantity, 10)
+            };
+            toast("success", `${selectedProduct.NAME} quantity updated to ${updatedCart[existingProductIndex].quantity}`);
+        } else {
+            updatedCart = [...cart, { ...selectedProduct, quantity: parseInt(quantity, 10) }];
+            toast("success", `${selectedProduct.NAME} has been added with quantity: ${quantity}`);
+        }
+    
+        setCart(updatedCart);
         setGrandTotal(calculateGrandTotal(updatedCart));
-        setIsLoad(false);
-    
-        toast("success", `${selectedProduct.NAME} has been added with quantity: ${quantity}`);
-    
         setSelectedProduct(null);
         setQuantities({});
     };
-    
 
     const handleCalculatePayment = () => {
-        // Memastikan amountPaid sudah terisi dan valid
+ 
         const amountPaidValue = parseFloat(amountPaid.current.value);
         
         if (isNaN(amountPaidValue) || amountPaidValue <= 0) {
             return toast("error", "Please enter a valid amount paid");
         }
-    
         setIsLoads(true);
         setIsPaid(true);
     
         const total = amountPaidValue - grandTotal;
     
         if (grandTotal > amountPaidValue) {
-            // Jika jumlah yang dibayar kurang dari grand total, tampilkan error
+
             setIsLoads(false);
             setIsPaid(false);
             return toast("error", "Amount paid must be greater than or equal to grand total");
         }
     
-        // Menunda perhitungan perubahan
         setTimeout(() => {
             setChange(total);
             setIsLoads(false); 
@@ -295,8 +308,6 @@ const SalesPage = () => {
     };
     
     
-
-    // Fetch products from the API
     async function getProducts() {
         const token = sessionTokens;
         if (!token) {
@@ -353,21 +364,19 @@ const SalesPage = () => {
         if (confirmationResult.isConfirmed) {
             const updatedCart = cart.filter(item => item.ID_PRODUCTS !== productId);
             setCart(updatedCart);
-            // Update grand total after removing item
             setGrandTotal(calculateGrandTotal(updatedCart));
             toast("success", `${productToRemove.NAME} has been removed`);
         }
     };
 
 
-    // Fungsi untuk membuka modal edit dengan product tertentu
+
     const handleOpenEditModal = (product) => {
         setEditingProduct(product);
         setNewQuantity(product.quantity.toString());
         setEditModalVisible(true);
     };
 
-    // Fungsi untuk mengonfirmasi perubahan quantity
     const handleSaveEdit = () => {
         const quantity = parseInt(newQuantity, 10);
         
@@ -376,7 +385,6 @@ const SalesPage = () => {
             return;
         }
 
-        // Update cart with quantity baru
         const updatedCart = cart.map(item => {
             if (item.ID_PRODUCTS === editingProduct.ID_PRODUCTS) {
                 return { ...item, quantity: quantity };
@@ -384,10 +392,8 @@ const SalesPage = () => {
             return item;
         });
 
-        // Update cart and grand total
         setCart(updatedCart);
         setGrandTotal(calculateGrandTotal(updatedCart));
-        
         toast("success", `Quantity for ${editingProduct.NAME} updated to ${quantity}`);
         setEditModalVisible(false);
         setEditingProduct(null);
@@ -451,7 +457,6 @@ const SalesPage = () => {
                                 </CCol>
                             </CRow>
 
-                            {/* Product Table */}
                             <CTable striped hover responsive>
                                 <CTableHead style={{textAlign: "center"}}>
                                     <CTableRow>
@@ -523,21 +528,7 @@ const SalesPage = () => {
                                     )}
                                 </CTableBody>
                             </CTable>
-                            {/* {cart.length > 0 ?(
-
-                            <CCol sm={12} className="mb-3 d-flex justify-content-end">
-                                              <CButton
-                                                color="success"
-                                                type="submit"
-                                                style={{ borderRadius: 40 }}
-                                                onClick={handleCalculateGrandTotal}
-                                              >
-                                               Count<CIcon icon={cilDollar}/> 
-                                              </CButton>
-                                         </CCol>
-                            ) : <div></div>} */}
-
-                            {/* Totals Section */}
+                           
                             <CRow className="mt-3">
                                 <CCol md={4}>
                                     <h6>Grand Total :</h6>
@@ -552,12 +543,6 @@ const SalesPage = () => {
                                     }
                                 </CCol>
 
-                                {/* <CCol md={4}>
-                                    <CFormInput type="number" label="Amount Paid" placeholder="Rp.xxx" />
-                                </CCol>
-                                <CCol md={4}>
-                                    <CFormInput type="number" label="Change" placeholder="Rp.xx" />
-                                </CCol> */}
                             </CRow>
 
                             <CRow className="mt-3 justify-content-end">
@@ -565,20 +550,18 @@ const SalesPage = () => {
                                     <CButton color="danger" style={{borderRadius: 20, width: 170}} onClick={handleDeleteCart}><CIcon icon={cilDelete}/> Delete Cart</CButton>
                                 </CCol>
                                 <CCol xs="auto">
-                                <CButton
+                                    <CButton
                                      color="success"
                                      type="submit"
                                      style={{ borderRadius: 20, width: 170 }}
                                      onClick={handleModalPayment}>
                                      <CIcon icon={cilMoney}/>  Process Payment
                                      </CButton>
-                                    {/* <CButton color="success" style={{borderRadius: 20, width: 200}} onClick={handleModalPayment}><CIcon icon={cilMoney} /> Process Payment</CButton> */}
                                 </CCol>
                             </CRow>
                         </CCardBody>
                     </CCard>
 
-                    {/* Modal for Product List */}
                     <CModal visible={modal} onClose={handleModalClose} size="lg">
                         <CModalHeader closeButton>
                             <CModalTitle>Product List</CModalTitle>
@@ -642,7 +625,6 @@ const SalesPage = () => {
                         </CModalFooter>
                     </CModal>
 
-                    {/* Modal for Editing Quantity */}
                     <CModal visible={editModalVisible} onClose={() => setEditModalVisible(false)} size="md">
                         <CModalHeader closeButton>
                             <CModalTitle>Edit Product Quantity</CModalTitle>
@@ -683,7 +665,6 @@ const SalesPage = () => {
                             <CModalTitle>{custName.current.value}'s Cart Payment</CModalTitle>
                           </CModalHeader>
                           <CModalBody>
-                            {/* {selectedFamily && ( */}
                                 <CForm>
                                     <CFormLabel>Grand Total</CFormLabel>
                                     <CFormInput type="text" id="total" value={formatCurrency(grandTotal)} disabled />
@@ -699,8 +680,8 @@ const SalesPage = () => {
                                     {
                                         isPaid === false ? 
                                     <div className="d-flex justify-content-end" style={{marginTop: 10}}>
-                                        <CButton color="secondary" style={{borderRadius:18}} onClick={handleCalculatePayment}>
-                                            Pay
+                                        <CButton  type="submit" color="secondary" style={{borderRadius:20, width: 80}} onClick={handleCalculatePayment}>
+                                         Pay <CIcon icon={cilDollar}  style={{paddingTop: 1}}/>
                                         </CButton>
                                     </div>
                                     : <div></div>
@@ -718,9 +699,6 @@ const SalesPage = () => {
                                     )}
                                 </CForm>
 
-                             
-                  
-                            {/* )} */}
                              {isLoading ? renderLoading() : null}
                           </CModalBody>
                           <CModalFooter>

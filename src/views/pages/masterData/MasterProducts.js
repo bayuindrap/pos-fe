@@ -27,10 +27,9 @@ import {
   CImage,
 } from "@coreui/react";
 import CIcon from '@coreui/icons-react'
-import { cilMagnifyingGlass, cilGrain, cilCloudDownload } from '@coreui/icons'
-import { sessionSelector, sessionToken } from "../../../redux/slicer/sessionSlicer";
+import { cilMagnifyingGlass,cilCloudDownload } from '@coreui/icons'
+import { sessionToken } from "../../../redux/slicer/sessionSlicer";
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
 import PaginationComponent from '../../../components/PaginationComponent'
 import { toast, renderLoading, formatCurrency } from '../../../utils/utils'
 import API from '../../../service/api'
@@ -39,8 +38,6 @@ import axios from "axios";
 import { CloudinaryContext, Image, Video, Transformation } from 'cloudinary-react';
 
 const MasterProducts = () => {
-  const navigate = useNavigate()
-  const sessionData = useSelector(sessionSelector);
   const sessionTokens = useSelector(sessionToken);
   const [searchTerm, setSearchTerm] = useState('')
   const [data, setData] = useState([]);
@@ -49,12 +46,9 @@ const MasterProducts = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalItems, setTotalItems] = useState(0);
   const [modal, setModal] = React.useState(false);
-  const [modalView, setModalView] = React.useState(false);
   const [category, setCategory] = useState([])
   const [selectedCategory, setSelectedCategory] = React.useState(null)
   const [imageFile, setImageFile] = useState(null);
-  const [selectedProduct, setSelectedProduct] = React.useState(null);
-  const [imageUrl, setImageUrl] = useState('');
   const addName = useRef("")
   const addPrice = useRef("")
   const addStock = useRef("")
@@ -71,19 +65,9 @@ const MasterProducts = () => {
     getCategory()
   }
 
-  const handleClickView = (item) => {
-    setModalView(true)
-    setSelectedProduct(item)
-  }
-
   const handleModalClose = () => {
     setModal(false);
     setSelectedCategory(null);
-  };
-
-  const handleModalViewClose = () => {
-    setModalView(false);
-    setSelectedProduct(null)
   };
 
   const handleFileChange = (e) => {
@@ -96,6 +80,12 @@ const MasterProducts = () => {
 
   const handleDownload = async () => {
     setIsLoading(true)
+    const token = sessionTokens;
+        if (!token) {
+          toast("error", "Token not found");
+          setIsLoading(false);
+          return;
+        }
     API.get(`/products/download`, {
       responseType: "blob",
     })
@@ -118,6 +108,12 @@ const MasterProducts = () => {
 
   async function getCategory () {
     setIsLoading(true)
+    const token = sessionTokens;
+        if (!token) {
+          toast("error", "Token not found");
+          setIsLoading(false);
+          return;
+        }
     API.post('products/category', {
     })
     .then(result => {
@@ -140,12 +136,12 @@ const MasterProducts = () => {
       <CTableHead>
         <CTableRow style={{textAlign: "center"}}>
           <CTableHeaderCell>No</CTableHeaderCell>
+          <CTableHeaderCell>Image</CTableHeaderCell>
           <CTableHeaderCell>Id Products</CTableHeaderCell>
           <CTableHeaderCell>Product Name</CTableHeaderCell>
           <CTableHeaderCell>Category</CTableHeaderCell>
           <CTableHeaderCell>Price</CTableHeaderCell>
           <CTableHeaderCell>Stock</CTableHeaderCell>
-          <CTableHeaderCell>Image</CTableHeaderCell>
         </CTableRow>
       </CTableHead>
       <CTableBody>
@@ -154,25 +150,18 @@ const MasterProducts = () => {
           return (
             <CTableRow key={index} style={{textAlign: "center"}}>
               <CTableDataCell>{actualIndex}</CTableDataCell>
+              <CTableDataCell>
+                 <CImage 
+                src={item.IMAGE} 
+                alt="Product Image" 
+                width={140} 
+              />
+              </CTableDataCell>
               <CTableDataCell>{item.ID_PRODUCTS}</CTableDataCell>
               <CTableDataCell>{item.NAME}</CTableDataCell>
               <CTableDataCell>{item.CATEGORY}</CTableDataCell>
               <CTableDataCell>{formatCurrency(item.PRICE)}</CTableDataCell>
               <CTableDataCell>{item.STOCK}</CTableDataCell>
-              <CTableDataCell>
-                {/* <CButton
-                  color="secondary"
-                  style={{ borderRadius: 40, width: 75, marginRight: 5 }}
-                  onClick={() => handleClickView(item)}
-                >
-                  View
-                </CButton> */}
-                 <CImage 
-                src={item.IMAGE} 
-                alt="Product Image" 
-                width={150} 
-              />
-              </CTableDataCell>
             </CTableRow>
           );
         })}
@@ -187,17 +176,16 @@ const MasterProducts = () => {
       setIsLoading(false);
       return;
     }
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    };
+    // const headers = {
+    //   'Content-Type': 'application/json',
+    //   'Authorization': `Bearer ${token}`,
+    // };
     setIsLoading(true);
     API.post("/products", {
       page: currentPage,
       limit: itemsPerPage,
       searchTerm: searchTerm
-    },
-    {headers}
+    }
   )
       .then((result) => {
         if (result.data.status) {
@@ -219,7 +207,6 @@ const MasterProducts = () => {
   }
 
   async function addProducts () {
-    // console.log("data", selectedFamily.RELATION_ID)
     const confirmationResult = await Swal.fire({
       title: `Add product ${addName.current.value}?`,
       showCancelButton: true,
@@ -240,10 +227,10 @@ const MasterProducts = () => {
         setIsLoading(false);
         return;
       }
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      };
+      // const headers = {
+      //   'Content-Type': 'application/json',
+      //   'Authorization': `Bearer ${token}`,
+      // };
       setIsLoading(true)
       const imageUrl = await uploadToCloudinary(imageFile);
     
@@ -258,8 +245,7 @@ const MasterProducts = () => {
           category : selectedCategory,
           stock : addStock.current.value,
           imageUrl: imageUrl
-        },
-        {headers}
+        }
       )
         .then(result => {   
            console.log(result)
@@ -372,7 +358,6 @@ const MasterProducts = () => {
           
         </CCardBody>
       </CCard>
-      {/* Modal Add Product */}
       <CModal
         visible={modal}
         onClose={handleModalClose}
@@ -382,16 +367,15 @@ const MasterProducts = () => {
           <CModalTitle>Add Product</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          {/* {selectedFamily && ( */}
+
             <CForm>
               <CFormLabel>Product Name</CFormLabel>
               <CFormInput
-                // defaultValue={selectedFamily.FAMILY_NM}
+      
                 ref={addName}
               />
               <CFormSelect
                 label="Category"
-                // defaultValu  e={selectedFamily.GENDER_ID}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 options={[
                   { label: "Select category", value: "" },
@@ -404,13 +388,11 @@ const MasterProducts = () => {
                <CFormLabel>Price</CFormLabel>
               <CFormInput
                 id="namaPasien"
-                // defaultValue={selectedFamily.FAMILY_NM}
                 ref={addPrice}
               />
                <CFormLabel>Stock</CFormLabel>
              <CFormInput
                 id="namaPasien"
-                // defaultValue={selectedFamily.FAMILY_NM}
                 ref={addStock}
               />
             </CForm>
@@ -420,8 +402,6 @@ const MasterProducts = () => {
               onChange={handleFileChange}
               accept="image/*"
             />
-
-          {/* )} */}
            {isLoading ? renderLoading() : null}
         </CModalBody>
         <CModalFooter>

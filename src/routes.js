@@ -9,8 +9,6 @@ const MasterTransaction = React.lazy(() => import('./views/pages/masterData/Mast
 const POS = React.lazy(() => import('./views/pages/page/posPage'));
 
 
-
-// Notifications
 const Alerts = React.lazy(() => import('./views/notifications/alerts/Alerts'));
 const Badges = React.lazy(() => import('./views/notifications/badges/Badges'));
 const Modals = React.lazy(() => import('./views/notifications/modals/Modals'));
@@ -22,14 +20,11 @@ export const adminRoutes = [
   { path: '/products/master', name: 'Master Products', element: MasterProducts },
   { path: '/transaction/master', name: 'Master Transaction', element: MasterTransaction },
   { path: '/POS', name: 'POS Page', element: POS },
-  // { path: '/error', name: 'Unknown', element: Page404 },
 ];
 
 
 export const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-  // { path: '/products/master', name: 'Master Products', element: MasterProducts },
-  // { path: '/dashboard', name: 'Dashboard', element: Dashboard },
 ];
 

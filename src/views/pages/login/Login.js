@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { sessionAction, sessionSelector } from "../../../redux/slicer/sessionSlicer";
@@ -16,7 +14,6 @@ import {
   CInputGroupText,
   CRow,
   CImage,
-  CLink
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser, cilLockUnlocked } from '@coreui/icons'

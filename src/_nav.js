@@ -1,29 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import CIcon from '@coreui/icons-react';
-import {
-  cilUser,
-  cilBook,
-  cilMedicalCross,
+import { 
   cilColumns,
-  cilPeople,
-  cilChart,
-  cilHospital,
-  cilUserFemale,
   cilAccountLogout,
-  cilAddressBook,
-  cilColorBorder,
-  cilSpeech,
-  cilContact,
-  cilGamepad,
   cilSettings,
-  cilMovie,
-  cilPenAlt,
-  cilNotes,
-  cilLevelUp,
-  cilOptions,
-  cibKeycdn,
-  cilDescription,
-  cilGift,
   cilChartLine,
   cilScreenDesktop,
   cilBrowser
@@ -33,10 +13,6 @@ import {
   CNavTitle,
   CImage,
   CNavGroup,
-  CDropdown,
-  CDropdownToggle,
-  CDropdownMenu,
-  CDropdownItem,
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -126,7 +102,6 @@ const Navigation = () => {
       name: isLogout ? 'Logging out...' : 'Keluar',
       to: '#',
       onClick: (e) => logoutHandler(e),
-      // icon: <CIcon icon={cilAccountLogout} customClassName="nav-icon" />,
       icon: isLogout ? (
         <div className='loading-icon'>
           <CImage src={loadgif} width={70} height={70} />

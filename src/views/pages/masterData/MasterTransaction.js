@@ -27,21 +27,17 @@ import {
   CImage,
 } from "@coreui/react";
 import CIcon from '@coreui/icons-react'
-import { cilMagnifyingGlass, cilGrain, cilCloudDownload } from '@coreui/icons'
-import { sessionSelector, sessionToken } from "../../../redux/slicer/sessionSlicer";
+import { cilMagnifyingGlass, cilCloudDownload } from '@coreui/icons'
+import { sessionToken } from "../../../redux/slicer/sessionSlicer";
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
 import PaginationComponent from '../../../components/PaginationComponent'
 import { toast, renderLoading, formatCurrency, formatDateTime } from '../../../utils/utils'
 import API from '../../../service/api'
 import Swal from "sweetalert2";
-import axios from "axios";
-import { CloudinaryContext, Image, Video, Transformation } from 'cloudinary-react';
+
 
 const MasterProducts = () => {
   const [sortBy, setSortBy] = useState('');
-  const navigate = useNavigate()
-  const sessionData = useSelector(sessionSelector);
   const sessionTokens = useSelector(sessionToken);
   const [searchTerm, setSearchTerm] = useState('')
   const [data, setData] = useState([]);
@@ -51,7 +47,7 @@ const MasterProducts = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalItems, setTotalItems] = useState(0);
   const [modal, setModal] = React.useState(false);
-  const [selectedProduct, setSelectedProduct] = React.useState(null);
+
   
   
   const handleSortChange = (e) => {
@@ -72,29 +68,24 @@ const MasterProducts = () => {
 
   const handleModalClose = () => {
     setModal(false);
-    // setSelectedCategory(null);
+
   };
  
 
   const handleDownload = async () => {
     setIsLoading(true);
-    const token = sessionTokens; // Menggunakan session token
+    const token = sessionTokens;
     if (!token) {
       toast("error", "Token not found");
       setIsLoading(false);
       return;
     }
     
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    };
     API.get(`/transaction/download`, {
       params: {
-        searchTerm: searchTerm, // Mengirimkan filter yang diterapkan
-        sortBy: sortBy, // Mengirimkan filter pengurutan
+        searchTerm: searchTerm, 
+        sortBy: sortBy,
       },
-      headers,
       responseType: "blob",
     })
       .then((response) => {
@@ -154,56 +145,18 @@ const MasterProducts = () => {
   );
 
  
-  // async function getTransactions() {
-  //   const token = sessionTokens
-  //   if (!token) {
-  //     toast("error", "Token not found");
-  //     setIsLoading(false);
-  //     return;
-  //   }
-  //   const headers = {
-  //     'Content-Type': 'application/json',
-  //     'Authorization': `Bearer ${token}`,
-  //   };
-  //   setIsLoading(true);
-  //   API.post("/transaction", {
-  //     page: currentPage,
-  //     limit: itemsPerPage,
-  //     searchTerm: searchTerm
-  //   },
-  //   {headers}
-  // )
-  //     .then((result) => {
-  //       if (result.data.status) {
-  //         const fetchedData = result.data.data;
-  //         setData(fetchedData);
-  //         setTotalItems(result.data.totalItems);
-  //         setIsLoading(false);
-  //       } else {
-  //         setIsLoading(false);
-  //         setData([])
-  //         setTotalItems(0)
-  //         toast("error", result.data.message);
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       setIsLoading(false);
-  //       toast("error", error.message);
-  //     });
-  // }
-
   async function getTransactions() {
-    const token = sessionTokens; // Menggunakan session token
+    const token = sessionTokens;
     if (!token) {
       toast("error", "Token not found");
       setIsLoading(false);
       return;
     }
     
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    };
+    // const headers = {
+    //   'Content-Type': 'application/json',
+    //   'Authorization': `Bearer ${token}`,
+    // };
 
     setIsLoading(true);
 
@@ -212,7 +165,7 @@ const MasterProducts = () => {
       limit: itemsPerPage,
       searchTerm: searchTerm,
       sortBy: sortBy
-    }, { headers })
+    })
       .then((result) => {
         if (result.data.status) {
           const fetchedData = result.data.data;
@@ -240,18 +193,12 @@ const MasterProducts = () => {
       setIsLoading(false);
       return;
     }
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    };
     setIsLoading(true);
     API.post("/transaction/detail", {
       page: currentPage,
       limit: itemsPerPage,
       trxId: trxId
-    },
-    {headers}
-  )
+    })
       .then((result) => {
         if (result.data.status) {
           const fetchedData = result.data.data;

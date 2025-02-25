@@ -6,19 +6,14 @@ import '@coreui/coreui/dist/css/coreui.min.css';
 import '@coreui/coreui/dist/js/coreui.bundle.min.js';
 import PrivateRoutes from './middleware/auth'
 import { renderLoading } from './utils/utils'
-// import './custom.css';
 import './scss/style.scss'
 
 
-
-
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
-
-
 const Login = React.lazy(() => import('./views/pages/login/Login'))
 const Dashboard = React.lazy(() => import('./views/pages/page/dashboard'))
 const Register = React.lazy(() => import('./views/pages/register/Register'))
-// const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
+
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 
 const App = () => {
@@ -45,7 +40,6 @@ const App = () => {
       <Suspense
         fallback={
           <div className="pt-3 text-center">
-            {/* <CSpinner color="primary" variant="grow" /> */}
             {renderLoading()}
           </div>
         }
@@ -54,10 +48,8 @@ const App = () => {
           <Route element={<PrivateRoutes/>}>
               <Route path="*" name="Home" element={<DefaultLayout />} />
           </Route>
-          <Route exact path="/login" name="Login Page" element={<Login />} />
-          {/* <Route exact path="/dashboard" name="Login Page" element={<Dashboard />} /> */}
+          <Route exact path="/login" name="Login Page" element={<Login />} />   
           <Route exact path="/register" name="Register Page" element={<Register />} />
-          {/* <Route exact path="/404" name="Page 404" element={<Page404 />} /> */}
           <Route exact path="/500" name="Page 500" element={<Page500 />} />
         </Routes>
       </Suspense>

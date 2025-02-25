@@ -4,26 +4,6 @@ import loadgif from '../assets/images/loading.gif'
 import { CImage } from '@coreui/react';
 
 
-
-// function toast(icon, title) {
-//   const Toast = Swal.mixin({
-//     toast: true,
-//     position: "top",
-//     showConfirmButton: false,
-//     timer: 3000,
-//     timerProgressBar: false,
-//     didOpen: (toast) => {
-//       toast.onmouseenter = Swal.stopTimer;
-//       toast.onmouseleave = Swal.resumeTimer;
-//     }
-//   });
-
-//   Toast.fire({
-//     icon,
-//     title
-//   });
-// }
-
 function toast(icon, title) {
   const Toast = Swal.mixin({
     toast: true,
