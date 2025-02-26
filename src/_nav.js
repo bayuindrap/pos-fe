@@ -33,7 +33,7 @@ const Navigation = () => {
     e.preventDefault();
     setIsLogout(true);
     var params = { userId: sessionData[0].ID_USER, token: null };
-    console.log("cek", sessionData[0].ID_USER)
+    // console.log("cek", sessionData[0].ID_USER)
     await API.post('login/updateToken', params);
     dispatch(sessionAction.logout());
     setTimeout(() => {

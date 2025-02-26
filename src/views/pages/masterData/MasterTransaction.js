@@ -221,11 +221,6 @@ const MasterProducts = () => {
   }
 
 
-
-
-  
-
-
   useEffect(() => {
     getTransactions()
   }, [currentPage, itemsPerPage, searchTerm, sortBy])
@@ -238,7 +233,6 @@ const MasterProducts = () => {
         </CCardHeader>
         <CCardBody>
           <CRow className="mb-3">
-            {/* Button Download di pojok kanan atas */}
             <CCol sm={12} className="d-flex justify-content-end mb-3">
               <CButton
                 color="success"
@@ -250,7 +244,6 @@ const MasterProducts = () => {
               </CButton>
             </CCol>
 
-            {/* Form Sort By */}
             <CCol sm={6} className="mb-3">
               <CFormLabel>Sort By</CFormLabel>
               <CFormSelect value={sortBy} onChange={handleSortChange}>
@@ -262,7 +255,6 @@ const MasterProducts = () => {
              </CFormSelect>
             </CCol>
 
-            {/* Search Input */}
             <CCol sm={6} className="mb-3">
               <CFormLabel>Find Customer</CFormLabel>
               <CInputGroup>
@@ -293,7 +285,7 @@ const MasterProducts = () => {
           
         </CCardBody>
       </CCard>
-      {/* Modal Add Product */}
+ 
       <CModal
         visible={modal}
         onClose={handleModalClose}
@@ -303,7 +295,6 @@ const MasterProducts = () => {
           <CModalTitle>Detail Transaction</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          {/* {selectedFamily && ( */}
           <CTable align="middle" className="mb-0 border" hover responsive>
           <CTableHead>
             <CTableRow style={{textAlign: "center"}}>

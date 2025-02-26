@@ -76,6 +76,11 @@ const SalesPage = () => {
         setGrandTotal(0)
     };
 
+    const handleDateChange = (e) => {
+        const selectedDate = e.target.value;
+        setToday(selectedDate);
+    }
+
     const handleClick = () => {
         setModal(true);
         getProducts();
@@ -95,6 +100,7 @@ const SalesPage = () => {
         setModalPayment(true);
         // setNewQuantity(product.quantity.toString());
         // setEditModalVisible(true);
+        // console.log("hari", today)
     };
     
     const handleModalPaymentClose = () => {
@@ -114,10 +120,10 @@ const SalesPage = () => {
             setIsLoading(false);
             return;
         }
-        const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-        };
+        // const headers = {
+        //     'Content-Type': 'application/json',
+        //     'Authorization': `Bearer ${token}`,
+        // };
         e.preventDefault();
         setIsLoading(true); 
         
@@ -127,6 +133,7 @@ const SalesPage = () => {
         const changeValue = change; 
         const customerName = custName.current.value; 
         const date = today;
+        // console.log("cek", date)
         const cashierId = sessionData[0].ID_USERS; 
         
         // console.log("sess", cartData)
@@ -139,7 +146,7 @@ const SalesPage = () => {
                 custName: customerName,
                 today: date,
                 cashierId: cashierId,
-            }, { headers });
+            });
     
            
             if (result.data.status) {
@@ -165,8 +172,6 @@ const SalesPage = () => {
         }
     }
     
-
-
     const handleQuantityChange = (productId, quantity) => {
         const parsedQuantity = parseInt(quantity, 10);
 
@@ -187,38 +192,6 @@ const SalesPage = () => {
         setSelectedProduct(product);
         setModal(false); 
     };
-
-    // const handleAddToCart = () => {
-    //     if (!selectedProduct) {
-    //         toast("error", "Please select a product.");
-    //         return;
-    //     }
-    
-    //     const quantity = quantities[selectedProduct.ID] || 0;
-    
-    //     if (quantity <= 0 || isNaN(quantity)) {
-    //         toast("error", "Quantity must be greater than zero.");
-    //         return;
-    //     }
-    
-    //     // Add the selected product with its quantity to the cart
-    //     const updatedCart = [...cart, { ...selectedProduct, quantity }];
-    //     setCart(updatedCart); // Update the cart with new product
-    //     toast("success", `${selectedProduct.NAME} has been added with quantity: ${quantity}`);
-    
-    //     setSelectedProduct(null); 
-    //     setQuantities({}); 
-
-    //     setIsLoad(true)
-    //     setTimeout(() => {
-    //     const total = cart.reduce((sum, item) => {
-    //         return sum + (item.PRICE * item.quantity);
-    //     }, 0);
-
-    //     setGrandTotal(total);
-    //     setIsLoad(false); 
-    //  }, 850);
-    // };
 
     const calculateGrandTotal = (cartItems) => {
         return cartItems.reduce((sum, item) => {
@@ -253,14 +226,27 @@ const SalesPage = () => {
             toast("error", "Please select a product.");
             return;
         }
-    
         const quantity = quantities[selectedProduct?.ID] || 0;
-    
         if (quantity <= 0 || isNaN(quantity)) {
             toast("error", "Quantity must be greater than zero.");
             return;
         }
+        if (quantity > selectedProduct.STOCK) {
+            toast("error", `Insufficient stock. Available: ${selectedProduct.STOCK}`);
+            return;
+        }
+    
         const existingProductIndex = cart.findIndex(item => item.ID_PRODUCTS === selectedProduct.ID_PRODUCTS);
+    
+        if (existingProductIndex !== -1) {
+            const existingQuantity = cart[existingProductIndex].quantity;
+            const newTotalQuantity = existingQuantity + parseInt(quantity, 10);
+            
+            if (newTotalQuantity > selectedProduct.STOCK) {
+                toast("error", `Insufficient stock. You already have ${existingQuantity} in cart. Available: ${selectedProduct.STOCK}`);
+                return;
+            }
+        }
     
         let updatedCart;
         
@@ -273,7 +259,7 @@ const SalesPage = () => {
             toast("success", `${selectedProduct.NAME} quantity updated to ${updatedCart[existingProductIndex].quantity}`);
         } else {
             updatedCart = [...cart, { ...selectedProduct, quantity: parseInt(quantity, 10) }];
-            toast("success", `${selectedProduct.NAME} has been added with quantity: ${quantity}`);
+            toast("success", `${selectedProduct.NAME} has been added with qty: ${quantity}`);
         }
     
         setCart(updatedCart);
@@ -304,10 +290,10 @@ const SalesPage = () => {
         setTimeout(() => {
             setChange(total);
             setIsLoads(false); 
-        }, 1200);
+        }, 1000);
     };
     
-    
+ 
     async function getProducts() {
         const token = sessionTokens;
         if (!token) {
@@ -320,7 +306,7 @@ const SalesPage = () => {
             'Authorization': `Bearer ${token}`,
         };
         setIsLoading(true);
-        API.post("/products", {
+        API.post("/products/pos", {
             page: currentPage,
             limit: itemsPerPage,
             searchTerm: searchTerm,
@@ -328,6 +314,7 @@ const SalesPage = () => {
             .then((result) => {
                 if (result.data.status) {
                     const fetchedData = result.data.data;
+                    // const productsActive = fetchedData.filter(item => (item.STATUS === 1))
                     setDataProducts(fetchedData);
                     setTotalItems(result.data.totalItems);
                     setIsLoading(false);
@@ -368,7 +355,6 @@ const SalesPage = () => {
             toast("success", `${productToRemove.NAME} has been removed`);
         }
     };
-
 
 
     const handleOpenEditModal = (product) => {
@@ -417,10 +403,9 @@ const SalesPage = () => {
                             <strong>Sales</strong>
                         </CCardHeader>
                         <CCardBody>
-                            {/* Sales Form */}
                             <CRow className="mb-3 shadow-lg p-3 bg-body rounded">
                                 <CCol md={4}>
-                                    <CFormInput type="date" id="date" label="Date" defaultValue={today} />
+                                    <CFormInput type="date" id="date" label="Date" value={today} onChange={handleDateChange}/>
                                 </CCol>
                                 <CCol md={4}>
                                     <CFormInput type="text" id="cashier" label="Cashier" value={sessionData[0].NAMA} disabled />
@@ -680,7 +665,7 @@ const SalesPage = () => {
                                     {
                                         isPaid === false ? 
                                     <div className="d-flex justify-content-end" style={{marginTop: 10}}>
-                                        <CButton  type="submit" color="secondary" style={{borderRadius:20, width: 80}} onClick={handleCalculatePayment}>
+                                        <CButton  type="button" color="secondary" style={{borderRadius:20, width: 80}} onClick={handleCalculatePayment}>
                                          Pay <CIcon icon={cilDollar}  style={{paddingTop: 1}}/>
                                         </CButton>
                                     </div>

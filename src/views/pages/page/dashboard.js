@@ -3,6 +3,7 @@ import { CChartLine } from '@coreui/react-chartjs';
 import { getStyle } from '@coreui/utils';
 import { useSelector } from 'react-redux';
 import { sessionToken } from "../../../redux/slicer/sessionSlicer";
+import SalesPerProductChart from './salesProduct';
 
 const TransactionChart = () => {
   const sessionTokens = useSelector(sessionToken);
@@ -10,7 +11,7 @@ const TransactionChart = () => {
   const [isLoading, setIsLoading] = useState(true);
   const chartRef = useRef(null);
 
-  // Handle color scheme changes
+
   useEffect(() => {
     document.documentElement.addEventListener('ColorSchemeChange', () => {
       if (chartRef.current) {
@@ -27,7 +28,7 @@ const TransactionChart = () => {
     });
   }, [chartRef]);
 
-  // Fetch data
+
   useEffect(() => {
     const token = sessionTokens;
 
@@ -47,7 +48,7 @@ const TransactionChart = () => {
       if (data.status && data.data) {
         const results = data.data;
 
-        // Group data by category
+     
         const categories = { 'Flat Glass': [], 'Automotive Glass': [] };
 
         results.forEach((row) => {
@@ -64,7 +65,7 @@ const TransactionChart = () => {
           }
         });
 
-        // Get unique dates from both categories and sort them
+  
         const uniqueDates = [
           ...new Set([
             ...categories['Flat Glass'].map(item => item.date),
@@ -72,7 +73,7 @@ const TransactionChart = () => {
           ]),
         ].sort((a, b) => new Date(a) - new Date(b));
 
-        // Prepare data for both categories
+
         const flatGlassSubtotal = uniqueDates.map(date => {
           const item = categories['Flat Glass'].find(item => item.date === date);
           return item ? item.total_subtotal : 0;
@@ -83,12 +84,12 @@ const TransactionChart = () => {
           return item ? item.total_subtotal : 0;
         });
 
-        // Calculate combined total per day
+
         const combinedTotal = uniqueDates.map((date, index) => {
           return flatGlassSubtotal[index] + autoGlassSubtotal[index];
         });
 
-        // Format dates for display
+   
         const formattedDates = uniqueDates.map(date => {
           const d = new Date(date);
           return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -148,7 +149,7 @@ const TransactionChart = () => {
     return <div>No data available</div>;
   }
 
-  // Format currency
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -160,75 +161,81 @@ const TransactionChart = () => {
 
   return (
     <div>
-      <h2>Daily Sales by Category</h2>
-      <CChartLine
-        ref={chartRef}
-        style={{ height: '300px', marginTop: '20px' }}
-        data={chartData}
-        options={{
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: true,
-              position: 'top',
-            },
-            tooltip: {
-              mode: 'index',
-              intersect: false,
-              callbacks: {
-                label: function(context) {
-                  let label = context.dataset.label || '';
-                  if (label) {
-                    label += ': ';
+      <div className='mb-5'>
+        <h2>Daily Sales by Category</h2>
+        <CChartLine
+          ref={chartRef}
+          style={{ height: '300px', marginTop: '20px' }}
+          data={chartData}
+          options={{
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+              },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                  label: function(context) {
+                    let label = context.dataset.label || '';
+                    if (label) {
+                      label += ': ';
+                    }
+                    if (context.parsed.y !== null) {
+                      label += formatCurrency(context.parsed.y);
+                    }
+                    return label;
                   }
-                  if (context.parsed.y !== null) {
-                    label += formatCurrency(context.parsed.y);
-                  }
-                  return label;
-                }
-              }
-            },
-          },
-          scales: {
-            x: {
-              grid: {
-                color: getStyle('--cui-border-color-translucent'),
-                drawOnChartArea: false,
-              },
-              ticks: {
-                color: getStyle('--cui-body-color'),
-              },
-            },
-            y: {
-              beginAtZero: true,
-              border: {
-                color: getStyle('--cui-border-color-translucent'),
-              },
-              grid: {
-                color: getStyle('--cui-border-color-translucent'),
-              },
-              ticks: {
-                color: getStyle('--cui-body-color'),
-                maxTicksLimit: 5,
-                callback: function(value) {
-                  return formatCurrency(value);
                 }
               },
             },
-          },
-          elements: {
-            line: {
-              tension: 0.4,
+            scales: {
+              x: {
+                grid: {
+                  color: getStyle('--cui-border-color-translucent'),
+                  drawOnChartArea: false,
+                },
+                ticks: {
+                  color: getStyle('--cui-body-color'),
+                },
+              },
+              y: {
+                beginAtZero: true,
+                border: {
+                  color: getStyle('--cui-border-color-translucent'),
+                },
+                grid: {
+                  color: getStyle('--cui-border-color-translucent'),
+                },
+                ticks: {
+                  color: getStyle('--cui-body-color'),
+                  maxTicksLimit: 5,
+                  callback: function(value) {
+                    return formatCurrency(value);
+                  }
+                },
+              },
             },
-            point: {
-              radius: 0,
-              hitRadius: 10,
-              hoverRadius: 4,
-              hoverBorderWidth: 3,
+            elements: {
+              line: {
+                tension: 0.4,
+              },
+              point: {
+                radius: 0,
+                hitRadius: 10,
+                hoverRadius: 4,
+                hoverBorderWidth: 3,
+              },
             },
-          },
-        }}
-      />
+          }}
+        />
+      </div>
+
+      {/* <div className='pt-5' style={{paddingBottom: 70}}>
+        <SalesPerProductChart/>
+      </div> */}
     </div>
   );
 };

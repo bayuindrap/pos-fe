@@ -52,6 +52,7 @@ const MasterProducts = () => {
   const [selectedCategory, setSelectedCategory] = React.useState(null)
   const [selectedProduct, setSelectedProduct] = React.useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState("");
   const addName = useRef("")
   const addPrice = useRef("")
   const addStock = useRef("")
@@ -71,6 +72,10 @@ const MasterProducts = () => {
     setModalEdit(false);
     setSelectedProduct(null);
   };
+
+  const handleSelectActive = value => {
+    setSelectedStatus(value)
+  }
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value)
@@ -176,6 +181,7 @@ const MasterProducts = () => {
           prodName: editName.current.value,
           prodPrice: editPrice.current.value,
           category: selectedCategory === null ? selectedProduct.ID_CATEGORY : selectedCategory,
+          status: selectedStatus === "" ? selectedProduct.STATUS : selectedStatus
         })
         .then(result => {
           //  console.log(result)
@@ -262,67 +268,155 @@ const MasterProducts = () => {
       });
   }
 
-  async function addProducts () {
-    const confirmationResult = await Swal.fire({
-      title: `Add product ${addName.current.value}?`,
-      showCancelButton: true,
-      confirmButtonText: 'Save',
-      cancelButtonText: 'Cancel',
-      cancelButtonColor: '#D49612',
-      confirmButtonColor: '#28a745',
-      reverseButtons: true,
-      style: {
-        confirmButton: 'width: 75px',
-        cancelButton: 'width: 75px'
-      }
-    })
-    if (confirmationResult.isConfirmed) {
-      const token = sessionTokens
-      if (!token) {
-        toast("error", "Token not found");
-        setIsLoading(false);
-        return;
-      }
-      // const headers = {
-      //   'Content-Type': 'application/json',
-      //   'Authorization': `Bearer ${token}`,
-      // };
-      setIsLoading(true)
-      const imageUrl = await uploadToCloudinary(imageFile);
+  // async function addProducts () {
+  //   const confirmationResult = await Swal.fire({
+  //     title: `Add product ${addName.current.value}?`,
+  //     showCancelButton: true,
+  //     confirmButtonText: 'Save',
+  //     cancelButtonText: 'Cancel',
+  //     cancelButtonColor: '#D49612',
+  //     confirmButtonColor: '#28a745',
+  //     reverseButtons: true,
+  //     style: {
+  //       confirmButton: 'width: 75px',
+  //       cancelButton: 'width: 75px'
+  //     }
+  //   })
+  //   if (confirmationResult.isConfirmed) {
+  //     const token = sessionTokens
+  //     if (!token) {
+  //       toast("error", "Token not found");
+  //       setIsLoading(false);
+  //       return;
+  //     }
+  //     // const headers = {
+  //     //   'Content-Type': 'application/json',
+  //     //   'Authorization': `Bearer ${token}`,
+  //     // };
+  //     setIsLoading(true)
+  //     const imageUrl = await uploadToCloudinary(imageFile);
     
-    if (!imageUrl) {
-      setIsLoading(false);
-      return;
-    }
-      await API
-        .post('products/add', {
-          prodName : addName.current.value,
-          price : addPrice.current.value,
-          category : selectedCategory,
-          stock : addStock.current.value,
-          imageUrl: imageUrl
+  //   if (!imageUrl) {
+  //     setIsLoading(false);
+  //     return;
+  //   }
+  //     await API
+  //       .post('products/add', {
+  //         prodName : addName.current.value,
+  //         price : addPrice.current.value,
+  //         category : selectedCategory,
+  //         stock : addStock.current.value,
+  //         imageUrl: imageUrl
+  //       }
+  //     )
+  //       .then(result => {   
+  //          console.log(result)
+  //         if (result.data.status) {
+  //           getProducts()
+  //           setIsLoading(false)
+  //           setModal(false)
+  //           toast("success", result.data.message);
+  //           // window.location.reload()
+  //         } else {
+  //           console.log("cekres",result)
+  //           toast("error", result.message);
+  //         }
+  //         setIsLoading(false)
+  //       })
+  //       .catch(e => {
+  //         setIsLoading(false)
+  //         toast("error", e.message);
+  //       })
+  //   } else if (confirmationResult.isDenied) {
+  //     Swal.fire('Changes are not saved', '', 'info')
+  //   }
+  // }
+
+  async function addProducts () {
+    try {
+      const confirmationResult = await Swal.fire({
+        title: `Add product ${addName.current.value}?`,
+        showCancelButton: true,
+        confirmButtonText: 'Save',
+        cancelButtonText: 'Cancel',
+        cancelButtonColor: '#D49612',
+        confirmButtonColor: '#28a745',
+        reverseButtons: true,
+        style: {
+          confirmButton: 'width: 75px',
+          cancelButton: 'width: 75px'
         }
-      )
-        .then(result => {   
-           console.log(result)
-          if (result.data.status) {
-            getProducts()
-            setIsLoading(false)
-            setModal(false)
-            toast("success", result.data.message);
-            // window.location.reload()
+      });
+  
+      if (confirmationResult.isConfirmed) {
+        const token = sessionTokens;
+        if (!token) {
+          toast("error", "Token not found");
+          setIsLoading(false);
+          return;
+        }
+  
+        setIsLoading(true);
+        const imageUrl = await uploadToCloudinary(imageFile);
+      
+        if (!imageUrl) {
+          setIsLoading(false);
+          return;
+        }
+  
+        const response = await API.post('products/add', {
+          prodName: addName.current.value,
+          price: addPrice.current.value,
+          category: selectedCategory,
+          stock: addStock.current.value,
+          imageUrl: imageUrl
+        });
+  
+        if (!response.data.status) {
+          if (response.data.data) {
+            const { value: additionalStock } = await Swal.fire({
+              title: `${addName.current.value} Already Exist`,
+              text: 'Would you like to add more stock?',
+              input: 'number',
+              inputPlaceholder: 'Enter additional stock',
+              showCancelButton: true,
+              inputValidator: (value) => {
+                if (!value) {
+                  return 'You need to input a stock amount';
+                }
+                if (value <= 0) {
+                  return 'Stock must be a positive number';
+                }
+              }
+            });
+  
+            if (additionalStock) {
+              const stockUpdateResponse = await API.post('products/update-stock', {
+                idProduct: response.data.data.ID_PRODUCTS,
+                additionalStock: parseInt(additionalStock)
+              });
+  
+              if (stockUpdateResponse.data.status) {
+                toast("success", "Stock updated successfully");
+                getProducts();
+                setModal(false);
+              } else {
+                toast("error", stockUpdateResponse.data.message);
+              }
+            }
           } else {
-            console.log("cekres",result)
-            toast("error", result.message);
+            toast("error", response.data.message);
           }
-          setIsLoading(false)
-        })
-        .catch(e => {
-          setIsLoading(false)
-          toast("error", e.message);
-        })
-    } else if (confirmationResult.isDenied) {
-      Swal.fire('Changes are not saved', '', 'info')
+        } else {
+          getProducts();
+          setModal(false);
+          toast("success", response.data.message);
+        }
+      }
+    } catch (e) {
+      toast("error", e.message);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -364,6 +458,7 @@ const MasterProducts = () => {
           <CTableHeaderCell>Category</CTableHeaderCell>
           <CTableHeaderCell>Price</CTableHeaderCell>
           <CTableHeaderCell>Stock</CTableHeaderCell>
+          <CTableHeaderCell>Status</CTableHeaderCell>
           <CTableHeaderCell>Action</CTableHeaderCell>
         </CTableRow>
       </CTableHead>
@@ -385,6 +480,7 @@ const MasterProducts = () => {
               <CTableDataCell>{item.CATEGORY}</CTableDataCell>
               <CTableDataCell>{formatCurrency(item.PRICE)}</CTableDataCell>
               <CTableDataCell>{item.STOCK}</CTableDataCell>
+              <CTableDataCell>{item.STATUS == 1 ? "Active" : "Inactive"}</CTableDataCell>
               <CTableDataCell>
               <CButton
                   color="warning"
@@ -562,6 +658,27 @@ const MasterProducts = () => {
                       })),
                     ]}
                   />
+                  <CFormLabel>Status</CFormLabel>
+                    <CFormSelect
+                        onChange={event =>
+                          handleSelectActive(event.target.value)
+                        }
+                        defaultValue={selectedProduct.STATUS}
+                        options={[
+                          {
+                            label: 'Set Active / Inactive',
+                            value: null
+                          },
+                          {
+                            label: 'Inactive',
+                            value: '0'
+                          },
+                          {
+                            label: 'Active',
+                            value: 1
+                          }
+                        ]}
+                      />
                  </CForm>
                 )}
                 {isLoading ? renderLoading() : null}
