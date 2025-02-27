@@ -26,8 +26,8 @@ import {
      CForm,
      CFormLabel
      } from '@coreui/react';
-import { renderLoading, toast, formatCurrency } from '../../../utils/utils';
-import { cilMagnifyingGlass, cilDollar, cilTrash, cilPlus, cilColorBorder, cilCart, cilMoney, cilDelete } from '@coreui/icons'
+import { renderLoading, toast, formatCurrency, formatNominal } from '../../../utils/utils';
+import { cilMagnifyingGlass, cilDollar, cilTrash, cilColorBorder, cilCart, cilMoney, cilDelete } from '@coreui/icons'
 import { CIcon } from '@coreui/icons-react';
 import { useSelector } from 'react-redux'
 import { sessionSelector, sessionToken } from "../../../redux/slicer/sessionSlicer";
@@ -464,42 +464,42 @@ const SalesPage = () => {
                                                 <CTableDataCell>{formatCurrency(item.PRICE * item.quantity)}</CTableDataCell>
                                                 <CTableDataCell>
                                                     <CRow>
-                                                        <CCol>
-                                                            <CIcon 
-                                                                icon={cilTrash} 
-                                                                style={{
-                                                                    color: "red",
-                                                                    width: '20px', 
-                                                                    height: '20px', 
-                                                                    transform: hoverDelete === item.ID_PRODUCTS ? 'scale(1.2)' : 'scale(1)',
-                                                                    transition: 'all 0.3s ease-in-out',
-                                                                    cursor: 'pointer',
-                                                                    marginLeft: 7
-                                                                    
-                                                                }} 
-                                                                onMouseEnter={() => setHoverDelete(item.ID_PRODUCTS)}
-                                                                onMouseLeave={() => setHoverDelete(null)}
-                                                                onClick={() => handleRemoveFromCart(item.ID_PRODUCTS)}
-                                                                
-                                                            />  
-                                                        </CCol>
-                                                        <CCol >
-                                                            <CIcon
-                                                                icon={cilColorBorder}
-                                                                style={{
-                                                                    color: hoverEdit === item.ID_PRODUCTS ? '#ffc107' : 'yellow',
-                                                                    width: '20px',
-                                                                    height: '20px',
-                                                                    transform: hoverEdit === item.ID_PRODUCTS ? 'scale(1.2)' : 'scale(1)',
-                                                                    transition: 'all 0.3s ease-in-out',
-                                                                    cursor: 'pointer',
-                                                                    marginLeft: 7
-                                                                }}
-                                                                onMouseEnter={() => setHoverEdit(item.ID_PRODUCTS)}
-                                                                onMouseLeave={() => setHoverEdit(null)}
-                                                                onClick={() => handleOpenEditModal(item)}
-                                                            />
-                                                        </CCol>
+                                                                <CCol >
+                                                                    <CIcon
+                                                                        icon={cilColorBorder}
+                                                                        style={{
+                                                                            color: hoverEdit === item.ID_PRODUCTS ? '#ffc107' : 'yellow',
+                                                                            width: '20px',
+                                                                            height: '20px',
+                                                                            transform: hoverEdit === item.ID_PRODUCTS ? 'scale(1.2)' : 'scale(1)',
+                                                                            transition: 'all 0.3s ease-in-out',
+                                                                            cursor: 'pointer',
+                                                                            marginLeft: 7
+                                                                        }}
+                                                                        onMouseEnter={() => setHoverEdit(item.ID_PRODUCTS)}
+                                                                        onMouseLeave={() => setHoverEdit(null)}
+                                                                        onClick={() => handleOpenEditModal(item)}
+                                                                    />
+                                                                </CCol>
+                                                                <CCol>
+                                                                    <CIcon 
+                                                                        icon={cilTrash} 
+                                                                        style={{
+                                                                            color: "red",
+                                                                            width: '20px', 
+                                                                            height: '20px', 
+                                                                            transform: hoverDelete === item.ID_PRODUCTS ? 'scale(1.2)' : 'scale(1)',
+                                                                            transition: 'all 0.3s ease-in-out',
+                                                                            cursor: 'pointer',
+                                                                            marginLeft: 7
+                                                                            
+                                                                        }} 
+                                                                        onMouseEnter={() => setHoverDelete(item.ID_PRODUCTS)}
+                                                                        onMouseLeave={() => setHoverDelete(null)}
+                                                                        onClick={() => handleRemoveFromCart(item.ID_PRODUCTS)}
+                                                                        
+                                                                    />  
+                                                                </CCol>
                                                     </CRow>
                                                 </CTableDataCell>
                                             </CTableRow>
@@ -523,7 +523,10 @@ const SalesPage = () => {
                                         ) : cart.length === 0 ? (
                                             <h1>Rp.0</h1>
                                         ) : (
-                                            <h1>{formatCurrency(grandTotal)}</h1>
+                                            <div>
+                                                <h1>{formatCurrency(grandTotal)}</h1>
+                                                <h6>({formatNominal(grandTotal)} Rupiah)</h6>
+                                            </div>
                                         )
                                     }
                                 </CCol>

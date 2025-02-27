@@ -86,6 +86,34 @@ function formatCurrency(amount) {
 }
 
 
+function formatNominal(amount) {
+  const digits = ["", "Satu ", "Dua ", "Tiga ", "empat ", "Lima " , "Enam"  , "Tujuh ", "Delapan ", "Sembilan ", "Sepuluh ", "sebelas "]
+  
+  if (amount < 12) {
+    return digits[amount];
+  } else if (amount < 20) {
+    return digits[amount - 10] + "Belas "
+  } else if (amount < 100) {
+    return digits[Math.floor(amount / 10)] + "Puluh " + digits[amount % 10]
+  } else if (amount < 200) {
+    return "Seratus " + formatNominal(amount - 100)
+  } else if (amount < 1000) {
+    return digits[Math.floor(amount / 100)] + "Ratus " + formatNominal(amount % 100)
+  } else if (amount < 2000) {
+    return "Seribu " + formatNominal(amount - 1000)
+  } else if (amount < 1000000) {
+    return formatNominal(Math.floor(amount / 1000)) + "Ribu " + formatNominal(amount % 1000)
+  } else if (amount < 1000000000) {
+    return formatNominal(Math.floor(amount / 1000000)) + "Juta " + formatNominal(amount % 1000000)
+  } else if (amount < 1000000000000) {
+    return formatNominal(Math.floor(amount / 1000000000)) + "Milyar " + formatNominal(amount % 1000000000)
+  } else {
+    return "-"
+  }
+}
+
+
+
 function renderLoading() {
   return (
     <div
@@ -109,4 +137,4 @@ function renderLoading() {
 
 
 
-export {toast, formattedDate, renderLoading, formattedDate2, formatDateTime, formatCurrency};
+export {toast, formattedDate, renderLoading, formattedDate2, formatDateTime, formatCurrency, formatNominal};
