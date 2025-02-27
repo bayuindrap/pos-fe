@@ -681,7 +681,10 @@ const SalesPage = () => {
                                             {isLoads ? (
                                                 renderLoading()
                                             ) : (
-                                                <h2>{formatCurrency(change)}</h2>
+                                                <div>
+                                                    <h2>{formatCurrency(change)}</h2>
+                                                    <h7>({formatNominal(change)} Rupiah)</h7>
+                                                </div>
                                             )}
                                         </>
                                     )}
